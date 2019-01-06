@@ -72,7 +72,8 @@ def playGame(win):
 
     #Number of players
     numPlayers = 2
-    colors = ["red", "blue","green","orange"]
+    players = list(range(numPlayers))
+    colors = ["blue", "orange","purple","black"]
     playerTextPos = [(100,100),(450,100),(100,450),(450,450)]
     playerTextList = []
     playerMoneyList = []
@@ -125,10 +126,6 @@ def playGame(win):
 
     monopolies = [(1,3),(6,8,9),(11,13,14),(16,18,19),(21,23,24),(26,27,29),(31,32,34),(37,39)]
 
-    masterPropertiesOwnedList = []
-    masterHousesList = [0]*40
-    masterMortgageList = [0]*40
-
     #Property rent
     propertyRentList = [None,2,None,4,None,"R",6,None,6,8,None,10,"U",10,12,"R",14,None,14,16,None,18,None,18,20,"R",22,22,"U",24,None,26,26,None,28,"R",None,35,None,40]
     oneHouseRent = [None,10,None,20,None,"R",30,None,30,40,None,50,"U",50,60,"R",70,None,70,80,None,90,None,90,100,"R",110,110,"U",120,None,130,130,None,150,"R",None,175,None,200]
@@ -142,6 +139,10 @@ def playGame(win):
     #Game is played 10000 times
     for j in range(10000):
 
+        masterPropertiesOwnedList = []
+        masterHousesList = [0]*40
+        masterMortgageList = []
+
         #Shuffle chance cards
         chance = [i for i in chanceCards]
         shuffle(chance)
@@ -153,9 +154,24 @@ def playGame(win):
         won = False
         while not won:
             #Roll for each player
-            for p in range(numPlayers):
+            for p in players:
                 done = False
                 while not done:
+
+                    #Unmortgaging properties
+                    for property in propertiesOwnedList[p]:
+                        #First try to mortgage a property without a house
+                        if property in masterMortgageList and playerMoneyList[p] > (propertyPriceList[property]//2):
+                            masterMortgageList.remove(property)
+                            playerMoneyList[p] -= (propertyPriceList[property]//2)
+
+                            #drawing
+                            if turnByTurn:
+                                mortgageCircle = Circle(Point(coordinateValues[property][0]+17,coordinateValues[property][1] - 11),5)
+                                mortgageCircle.setFill("white")
+                                mortgageCircle.setOutline("white")
+                                mortgageCircle.draw(win)
+
 
                     #Buying houses
                     for m in monopolies:
@@ -186,7 +202,7 @@ def playGame(win):
                                     housesText.draw(win)
                                 for i in range(len(m)):
                                     housesText = Text(Point(coordinateValues[m[i]][0]-20,coordinateValues[m[i]][1] - 10), "h: " + str(masterHousesList[m[i]]))
-                                    housesText.setTextColor("purple")
+                                    housesText.setTextColor("green")
                                     housesText.draw(win)
 
 
@@ -267,8 +283,8 @@ def playGame(win):
                         community.pop(0)
 
 
-                    #If the player lands on a owned property - RENT
-                    if posList[p] in masterPropertiesOwnedList and posList[p] not in propertiesOwnedList[p]:
+                    #If the player lands on a owned property (not mortgaged) - RENT
+                    if posList[p] in masterPropertiesOwnedList and posList[p] not in propertiesOwnedList[p] and posList[p] not in masterMortgageList:
                         for player in range(len(propertiesOwnedList)):
                             if posList[p] in propertiesOwnedList[player]:
                                 if isinstance(propertyRentList[posList[p]],int):
@@ -313,6 +329,64 @@ def playGame(win):
                                     playerMoneyList[p] -= (die1+die2)*10
                                     playerMoneyList[player] += (die1+die2)*10
 
+
+                    #Landing on squares that make you pay taxes
+                    if posList[p] == 4:
+                        if playerMoneyList[p] >= 2000:
+                            playerMoneyList[p] -= 200
+                        else:
+                            playerMoneyList[p] -= (playerMoneyList[p]//10)
+                    if posList[p] == 38:
+                        playerMoneyList[p] -= 75
+
+                    #If you have zero or negative money after paying rent/taxes
+                    if playerMoneyList[p] <= 0:
+                        print("money less than 0")
+                        for i in [True,False]: #On the first iteration only sell no houses, on the second iteration sell anything
+                            for property in propertiesOwnedList[p]:
+                                #First try to mortgage a property without a house
+                                if property not in masterMortgageList and property not in masterHousesList and i:
+                                    masterMortgageList.append(property)
+                                    playerMoneyList[p] += (propertyPriceList[property]//2)
+                                    print("property without a house")
+                                #Second, sell anything
+                                elif property not in masterMortgageList and not i:
+                                    masterMortgageList.append(property)
+                                    playerMoneyList[p] += (propertyPriceList[property]//2)
+                                    print("property with a house")
+
+                                #If nothing happened, break out of the loop
+                                else:
+                                    print("nothing to sell")
+                                    continue
+
+                                #Printing it out
+                                if turnByTurn:
+
+                                    print("drawing...")
+
+                                    mortgageText = Text(Point(coordinateValues[property][0]+17,coordinateValues[property][1] - 10), "M")
+                                    mortgageText.setTextColor("Red")
+                                    mortgageText.draw(win)
+
+                                #If the player has more than zero dollars, break out of the loop
+                                if playerMoneyList[p] > 0:
+                                    print("Have enough $$")
+                                    break
+                            if playerMoneyList[p] > 0:
+                                print("Have enough $$ 2nd loop")
+                                break
+
+                    #if the player still has zero or less money even after mortgaging, the player loses
+                    if playerMoneyList[p] <= 0:
+                        #Remove properties from master lists
+                        for property in propertiesOwnedList[p]:
+                            if property in masterMortgageList:
+                                masterMortgageList.remove(property)
+                            if property in masterPropertiesOwnedList:
+                                masterPropertiesOwnedList.remove(property)
+                            masterHousesList[property] = 0
+                        players.pop(p)
 
 
                     #If the player lands on an unowned property
