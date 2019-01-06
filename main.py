@@ -71,14 +71,14 @@ def playGame(win):
     turnByTurn = True
 
     #Number of players
-    numPlayers = 2
+    numPlayers = 4
     players = list(range(numPlayers))
     colors = ["blue", "orange","purple","black"]
     playerTextPos = [(100,100),(450,100),(100,450),(450,450)]
     playerTextList = []
     playerMoneyList = []
     playerCircleList = []
-    propertiesOwnedList = [[],[],[]]
+    propertiesOwnedList = [[],[],[],[]]
 
     #initalizes players and text
     for p in range(numPlayers):
@@ -345,7 +345,7 @@ def playGame(win):
                         for i in [True,False]: #On the first iteration only sell no houses, on the second iteration sell anything
                             for property in propertiesOwnedList[p]:
                                 #First try to mortgage a property without a house
-                                if property not in masterMortgageList and property not in masterHousesList and i:
+                                if property not in masterMortgageList and masterHousesList[property] == 0 and i:
                                     masterMortgageList.append(property)
                                     playerMoneyList[p] += (propertyPriceList[property]//2)
                                     print("property without a house")
@@ -381,11 +381,40 @@ def playGame(win):
                     if playerMoneyList[p] <= 0:
                         #Remove properties from master lists
                         for property in propertiesOwnedList[p]:
-                            if property in masterMortgageList:
-                                masterMortgageList.remove(property)
-                            if property in masterPropertiesOwnedList:
-                                masterPropertiesOwnedList.remove(property)
-                            masterHousesList[property] = 0
+
+                            #drawing
+
+                            if turnByTurn:
+                                #mortgage
+                                if property in masterMortgageList:
+                                    mortgageCircle = Circle(Point(coordinateValues[property][0]+17,coordinateValues[property][1] - 11),6)
+                                    mortgageCircle.setFill("white")
+                                    mortgageCircle.setOutline("white")
+                                    mortgageCircle.draw(win)
+
+                                #Properties Owned
+                                propertyCircle = Circle(Point(coordinateValues[property][0],coordinateValues[property][1] - 10), 6)
+                                propertyCircle.setFill("white")
+                                propertyCircle.setOutline("white")
+                                propertyCircle.draw(win)
+
+                                #Houses
+                                housesText = Circle(Point(coordinateValues[property][0]-15,coordinateValues[property][1] - 10),6)
+                                housesText.setFill("white")
+                                housesText.setOutline("white")
+                                housesText.draw(win)
+                        #erasing player
+                        if turnByTurn:
+                            #Player
+                            playerCircleList[p].setOutline("white")
+                            playerCircleList[p].setFill("white")
+
+
+                        if property in masterMortgageList:
+                            masterMortgageList.remove(property)
+                        if property in masterPropertiesOwnedList:
+                            masterPropertiesOwnedList.remove(property)
+                        masterHousesList[property] = 0
                         players.pop(p)
 
 
