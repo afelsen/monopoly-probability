@@ -78,11 +78,13 @@ After Roll
 * Starting out with the dark purple/brown monopoly and building on it immediately significantly reduces your odds of winning. The lack of money at the beginning is far worse than the slight benefit of the purple monopoly
   * However, starting with and building on any other monopoly is beneficial
 * Properties that winners tend to have does not seem to directly correlate with the most landed on properties
-*
+* Boardwalk is the most common property owned by winners
+* The dark purple/brown properties are least likely to be landed on and among the least common owned by winners
+
 
 
 ## Example
 
-![](READMEexamples/MonopolySingle.png)
+![](READMEexamples/MonopolySingle1.png)
 
 ![](READMEexamples/MonopolyTenThousand.png)
