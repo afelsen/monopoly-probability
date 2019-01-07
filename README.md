@@ -85,5 +85,4 @@ After Roll
 
 ## Example
 
-<img src="READMEexamples/MonopolySingle1.png" width="49%"/>
-<img src="READMEexamples/MonopolyTenThousand.png" width="49%"/>
+<img src="READMEexamples/MonopolySingle1.png" width="48%"/> <img src="READMEexamples/MonopolyTenThousand.png" width="48%"/>
