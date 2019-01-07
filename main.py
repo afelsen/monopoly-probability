@@ -117,12 +117,13 @@ def playGame(win):
     hotelRent = [None,250,None,450,None,"R",550,None,550,600,None,750,"U",750,900,"R",950,None,950,1000,None,1050,None,1050,1100,"R",1150,1150,"U",1200,None,1275,1275,None,1400,"R",None,1500,None,2000]
 
 
-    numPlayers = 2
+    numPlayers = 3
     wins = [0]*numPlayers
     losses = [0]*numPlayers
     ties = [0]*numPlayers
 
     winningProperties = [0]*40
+    propertyLostOn = [0]*40
 
 
     #Game is played 10000 times
@@ -504,6 +505,7 @@ def playGame(win):
                             masterPropertiesOwnedList.remove(property)
                         masterHousesList[property] = 0
                         losses[p] += 1
+                        propertyLostOn[posList[p]] += 1
                         players.remove(p)
                         done = True
 
@@ -578,32 +580,33 @@ def playGame(win):
         #     accum += value
         # print(accum)
 
-    #Percent landed on each square
-    for v in range(len(ultimateBoxValues)):
-        ultimateBoxValues[v] = round(ultimateBoxValues[v]/(j+1)*100,3)
-    print(ultimateBoxValues)
-
     nonProperties = [0,2,4,7,10,17,20,22,30,33,36,38]
 
-    #Sort the percentages in a list - used for color coding
-    sortedValues = ultimateBoxValues.copy()
-    for i in range(len(nonProperties)):
-        sortedValues.pop(nonProperties[i]-i)
-    sortedValues.sort()
-    print(sortedValues)
+###Percent landed on each square
+    # for v in range(len(ultimateBoxValues)):
+    #     ultimateBoxValues[v] = round(ultimateBoxValues[v]/(j+1)*100,3)
+    # print(ultimateBoxValues)
+    #
+    #
+    # #Sort the percentages in a list - used for color coding
+    # sortedValues = ultimateBoxValues.copy()
+    # for i in range(len(nonProperties)):
+    #     sortedValues.pop(nonProperties[i]-i)
+    # sortedValues.sort()
+    # print(sortedValues)
+    #
+    # #Draw on the board color coded
+    # gradient = getGradientListRGB("red","green",28)
+    #
+    # for i in range(len(ultimateBoxValues)):
+    #     if i not in nonProperties:
+    #         percent = Text(Point(coordinateValues[i][0],coordinateValues[i][1]), ultimateBoxValues[i])
+    #         v = sortedValues.index(ultimateBoxValues[i])
+    #         textcolor = color_rgb(gradient[v][0],gradient[v][1],gradient[v][2])
+    #         percent.setTextColor(textcolor)
+    #         percent.draw(win)
 
-    #Draw on the board color coded
-    gradient = getGradientListRGB("red","green",28)
-
-    for i in range(len(ultimateBoxValues)):
-        if i not in nonProperties:
-            percent = Text(Point(coordinateValues[i][0],coordinateValues[i][1]), ultimateBoxValues[i])
-            v = sortedValues.index(ultimateBoxValues[i])
-            textcolor = color_rgb(gradient[v][0],gradient[v][1],gradient[v][2])
-            percent.setTextColor(textcolor)
-            percent.draw(win)
-
-    ###Wins,Loss,Tie Ratio by player
+###Wins,Loss,Tie Ratio by player
     for i in range(len(wins)):
         wins[i] = wins[i]/(j+1)
 
@@ -641,7 +644,29 @@ def playGame(win):
             percent.draw(win)
             print(winningProperties[i])
 
+### Properties lost on
+    for p in range(len(propertyLostOn)):
+        propertyLostOn[p] = propertyLostOn[p]/(j+1)
 
+    print (propertyLostOn)
+
+    #Sort the percentages in a list - used for color coding
+    sortedValues = propertyLostOn.copy()
+    for i in range(len(nonProperties)):
+        sortedValues.pop(nonProperties[i]-i)
+    sortedValues.sort()
+
+    #Draw on the board color coded
+    gradient = getGradientListRGB("red","green",28)
+
+    for i in range(len(propertyLostOn)):
+        if i not in nonProperties:
+            percent = Text(Point(coordinateValues[i][0],coordinateValues[i][1]), propertyLostOn[i])
+            v = sortedValues.index(propertyLostOn[i])
+            textcolor = color_rgb(gradient[v][0],gradient[v][1],gradient[v][2])
+            percent.setTextColor(textcolor)
+            percent.draw(win)
+            print(propertyLostOn[i])
 
 
 def main():
