@@ -85,6 +85,5 @@ After Roll
 
 ## Example
 
-![](READMEexamples/MonopolySingle1.png)
-
-![](READMEexamples/MonopolyTenThousand.png)
+<img src="READMEexamples/MonopolySingle1.png" width="49%"/>
+<img src="READMEexamples/MonopolyTenThousand.png" width="49%"/>
