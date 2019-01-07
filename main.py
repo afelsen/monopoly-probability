@@ -79,6 +79,19 @@ def getGradientListRGB(color1,color2,length):
 
 def playGame(win):
 
+    ################## How many players? ####################
+    numPlayers = 3
+    #########################################################
+
+    ################ Auto or turn by turn? ##################
+    turnByTurn = False
+    #########################################################
+
+    ########## Move how many turns at a time? ###############
+    turnSkip = 1
+    #########################################################
+
+
     #Coordinate values of each tile on the board
     coordinateValues = []
     for br in range(10,-1,-1):
@@ -98,7 +111,7 @@ def playGame(win):
 
     chanceCards = [0,24,11,'U','R','R',"+50","Get out of jail","Back 3","-15",5,39,"giveeach50","+150","+100","Hotel/houses"]
 
-    communityCards = ["+100","+100","+100","-150","+10","+45","geteach50","-50",0,"Get out of jail","-100","+200","Hotel/houses","+25","+20",10]
+    communityCards = ["+100","+100","+100","-150","+10","+45","geteach50","-50",0,"Get out of jail","-100","+200","Hotel/houses","+25","+20","J"]
 
     #Property prices
     propertyPriceList = [None,60,None,60,None,200,100,None,100,120,None,140,150,140,160,200,180,None,180,200,None,220,None,220,240,200,260,260,150,280,None,300,300,None,320,200,None,350,None,400]
@@ -116,8 +129,6 @@ def playGame(win):
     fourHousesRent = [None,160,None,320,None,"R",400,None,400,450,None,625,"U",625,700,"R",750,None,750,800,None,875,None,875,925,"R",975,975,"U",1025,None,1100,1100,None,1200,"R",None,1300,None,1700]
     hotelRent = [None,250,None,450,None,"R",550,None,550,600,None,750,"U",750,900,"R",950,None,950,1000,None,1050,None,1050,1100,"R",1150,1150,"U",1200,None,1275,1275,None,1400,"R",None,1500,None,2000]
 
-
-    numPlayers = 3
     wins = [0]*numPlayers
     losses = [0]*numPlayers
     ties = [0]*numPlayers
@@ -129,10 +140,7 @@ def playGame(win):
     #Game is played 10000 times
     for j in range(1000):
 
-        #Determines if you want the game to run automatically or turn by turn
-        turnByTurn = False
         turnsPlayed = 0
-        turnSkip = 10
 
         #Number of players
         players = list(range(numPlayers))
@@ -141,10 +149,28 @@ def playGame(win):
         colors = ["blue", "orange","purple","black"]
         playerTextPos = [(100,100),(450,100),(100,450),(450,450)]
         playerTextList = []
-        playerMoneyList = []
         playerCircleList = []
+
+            #Get out of jail free cards
+        CommunityFreePos = [(80,120),(430,120),(80,430),(430,430)]
+        CommunityFreeTextList = []
+        ChanceFreePos = [(120,120),(470,120),(120,430),(470,430)]
+        ChanceFreeTextList = []
+
+        playerMoneyList = []
         propertiesOwnedList = [[],[],[],[]]
 
+        #Jail
+        getOutofJailCard = [0]*numPlayers
+        inJail = [False,False,False]
+
+        #Count how many doubles have been thrown (or how many times has been rolled to escape jail)
+        rollCounter = 0
+        #How long a player has been in jail
+        inJailCounter = 0
+
+
+        #Creating most of the player-related middle text (and initializing the money)
         for p in range(numPlayers):
             playerMoneyList.append(500+200+150+80+50+30+7)
             if turnByTurn:
@@ -155,6 +181,15 @@ def playGame(win):
                 playerCircleList.append(Circle(Point(525,525), 7))
                 playerCircleList[p].draw(win)
                 playerCircleList[p].setFill(colors[p])
+
+                #Get out of Jail Free icon
+                CommunityFreeTextList.append(Text(Point(CommunityFreePos[p][0],CommunityFreePos[p][1]),"Free"))
+                CommunityFreeTextList[p].setTextColor("white")
+                CommunityFreeTextList[p].draw(win)
+
+                ChanceFreeTextList.append(Text(Point(ChanceFreePos[p][0],ChanceFreePos[p][1]),"Free"))
+                ChanceFreeTextList[p].setTextColor("white")
+                ChanceFreeTextList[p].draw(win)
 
 
         #The position of the players
@@ -177,12 +212,13 @@ def playGame(win):
         # masterHousesList[*] = *
         # masterHousesList[*] = ...
         #
-        # masterMortgageList[*] = *
-        # masterMortgageList[*] = ...
+        # masterMortgageList += [*,*,...]
         #
         # middlePot = *
+        #############################################
 
-        ###Only necessary if changing starting properties, but doesn't hurt to leave uncommented
+
+        #Only necessary if changing starting properties, but doesn't hurt to leave uncommented
         for player in propertiesOwnedList:
             for property in player:
                 masterPropertiesOwnedList.append(property)
@@ -198,13 +234,17 @@ def playGame(win):
 
         won = False
 
-
         while not won:
             #Roll for each player
             for p in players:
                 done = False
+                rollCounter = 0
 
                 while not done:
+                    if turnByTurn:
+                        print()
+                        print("Player " + str(p+1))
+                        print("Pos: " + str(posList[p]))
 
                     #Unmortgaging properties
                     for property in propertiesOwnedList[p]:
@@ -265,11 +305,61 @@ def playGame(win):
 
                     if die1 != die2:
                         done = True
+                    else:
+                        rollCounter += 1
+
+                    #Jail functionality
+                    if inJail[p] == True:
+                        if getOutofJailCard[p] > 0:
+                            getOutofJailCard[p] -= 1
+                            inJail[p] = False
+                            inJailCounter = 0
+                            if turnByTurn:
+                                if getOutofJailCard[p] == 1:
+                                    ChanceFreeTextList[p].setTextColor("white")
+                                else:
+                                    CommunityFreeTextList[p].setTextColor("white")
+                                    ChanceFreeTextList[p].setTextColor("white")
+                        elif playerMoneyList[p] > 50:
+                            playerMoneyList[p] -= 50
+                            middlePot += 50
+                            inJail[p] = False
+                            inJailCounter = 0
+                        elif rollCounter > 0:
+                            inJail[p] = False
+                            #You don't move on the double, you roll again
+                            die1 = 0
+                            die2 = 0
+                            inJailCounter = 0
+                        elif inJailCounter >=3:
+                            #After three rolls, move out of jail but don't roll
+                            done = True
+                            inJail[p] = False
+                            inJailCounter = 0
+                        else:
+                            die1 = 0
+                            die2 = 0
+                            inJailCounter += 1
+
+
+
+                    #If you've rolled doubles three times
+                    if rollCounter >= 3:
+                        inJail[p] = True
+                        posList[p] = 10
+                        rollCounter = 0
+                        die1 = 0
+                        die2 = 0
+
                     posList[p] += die1 + die2
 
                     #If you get snake eyes
                     if die1 == 1 and die2 == 1:
                         playerMoneyList[p] += 100
+
+                    #Landing on go = extra $200
+                    if posList[p] == 40:
+                        playerMoneyList[p] += 200
 
                     #If you pass go
                     if posList[p] >= 40:
@@ -279,6 +369,7 @@ def playGame(win):
                     #If you land on "Go to jail", go to jail
                     if posList[p] == 30:
                         posList[p] = 10
+                        inJail[p] = True
 
                     #If you land on "Free Parking", get the pot
                     if posList[p] == 20:
@@ -322,7 +413,9 @@ def playGame(win):
                                 playerMoneyList[p] -= 50
                                 playerMoneyList[player] += 50
                         elif chance[0] == "Get out of jail":
-                            pass
+                            getOutofJailCard[p] += 1
+                            if turnByTurn:
+                                ChanceFreeTextList[p].setTextColor("green")
                         elif chance[0] == "Hotel/houses":
                             pass
 
@@ -334,12 +427,11 @@ def playGame(win):
                             if turnsPlayed % turnSkip == 0:
                                 win.getMouse()
                             chanceText.setTextColor("white")
+
+                            print("Chance: " + str(chance[0]))
                         chance.pop(0)
 
-
-                    if posList[p] == 40:
-                        playerMoneyList[p] += 200
-
+                    #Community Chest
                     if posList[p] == 2 or posList[p] == 17 or posList[p] == 33:
                         if len(community) == 0:
                             community = [i for i in communityCards]
@@ -360,7 +452,12 @@ def playGame(win):
                                 playerMoneyList[p] += 50
                                 playerMoneyList[player] -= 50
                         elif community[0] == "Get out of jail":
-                            pass
+                            getOutofJailCard[p] += 1
+                            if turnByTurn:
+                                CommunityFreeTextList[p].setTextColor("green")
+                        elif community[0] == "J":
+                            inJail[p] = True
+                            posList[p] = 10
                         elif community[0] == "Hotel/houses":
                             pass
 
@@ -373,9 +470,24 @@ def playGame(win):
                                 win.getMouse()
                             communityText.setTextColor("white")
 
+                            print("Community Chest: " + str(community[0]))
+
 
                         community.pop(0)
 
+
+                    #If the player lands on an unowned property
+                    if isinstance(propertyPriceList[posList[p]],int) and (posList[p] not in masterPropertiesOwnedList):
+                        #If the player can afford it
+                        if propertyPriceList[posList[p]] < playerMoneyList[p]:
+                            masterPropertiesOwnedList.append(posList[p])
+                            propertiesOwnedList[p].append(posList[p])
+                            playerMoneyList[p] -= propertyPriceList[posList[p]]
+
+                            if turnByTurn:
+                                propertyText = Text(Point(coordinateValues[posList[p]][0],coordinateValues[posList[p]][1] - 10), p+1)
+                                propertyText.setTextColor(colors[p])
+                                propertyText.draw(win)
 
                     #If the player lands on a owned property (not mortgaged) - RENT
                     if posList[p] in masterPropertiesOwnedList and posList[p] not in propertiesOwnedList[p] and posList[p] not in masterMortgageList:
@@ -468,7 +580,13 @@ def playGame(win):
 
                     #if the player still has zero or less money even after mortgaging, the player loses
                     if playerMoneyList[p] <= 0:
-                        #Remove properties from master lists
+
+                        #erasing player
+                        if turnByTurn:
+                            #Player
+                            playerCircleList[p].setOutline("white")
+                            playerCircleList[p].setFill("white")
+
                         for property in propertiesOwnedList[p]:
 
                             #drawing
@@ -492,18 +610,13 @@ def playGame(win):
                                 housesText.setFill("white")
                                 housesText.setOutline("white")
                                 housesText.draw(win)
-                        #erasing player
-                        if turnByTurn:
-                            #Player
-                            playerCircleList[p].setOutline("white")
-                            playerCircleList[p].setFill("white")
 
-
-                        if property in masterMortgageList:
-                            masterMortgageList.remove(property)
-                        if property in masterPropertiesOwnedList:
-                            masterPropertiesOwnedList.remove(property)
-                        masterHousesList[property] = 0
+                            #Remove properties from master lists
+                            if property in masterMortgageList:
+                                masterMortgageList.remove(property)
+                            if property in masterPropertiesOwnedList:
+                                masterPropertiesOwnedList.remove(property)
+                            masterHousesList[property] = 0
                         losses[p] += 1
                         propertyLostOn[posList[p]] += 1
                         players.remove(p)
@@ -519,25 +632,17 @@ def playGame(win):
                             for property in propertiesOwnedList[player]:
                                 winningProperties[property] += 1
 
+                        if turnByTurn:
+                            rect = Rectangle(Point(0, 0), Point(550,550))
+                            rect.setFill("white")
+                            rect.draw(win)
+                            drawBoard(win)
+
                     elif turnsPlayed > 1000:
                         won = True
                         done = True
                         for player in players:
                             ties[player] += 1
-
-                    #If the player lands on an unowned property
-                    if isinstance(propertyPriceList[posList[p]],int) and (posList[p] not in masterPropertiesOwnedList):
-                        #If the player can afford it
-                        if propertyPriceList[posList[p]] < playerMoneyList[p]:
-                            masterPropertiesOwnedList.append(posList[p])
-                            propertiesOwnedList[p].append(posList[p])
-                            playerMoneyList[p] -= propertyPriceList[posList[p]]
-
-                            if turnByTurn:
-                                propertyText = Text(Point(coordinateValues[posList[p]][0],coordinateValues[posList[p]][1] - 10), p+1)
-                                propertyText.setTextColor(colors[p])
-                                propertyText.draw(win)
-
 
 
                     #Only run this if you want to simulate each turn at a time
@@ -554,16 +659,35 @@ def playGame(win):
                         playerTextList[p] = Text(Point(playerTextPos[p][0],playerTextPos[p][1]),"Player" + str(p+1) + ": " + str(playerMoneyList[p]))
                         playerTextList[p].setTextColor(colors[p])
                         playerTextList[p].draw(win)
-                        print(str(p+1) + ": " + str(playerMoneyList[p]))
 
+                        #Jail text
+                        jailIcon = Text(Point(coordinateValues[10][0],coordinateValues[10][1]-10), "J")
+                        jailIcon.setTextColor("white")
+                        jailIcon.draw(win)
+
+                        for player in players:
+                            if inJail[player] == True:
+                                jailIcon.setTextColor("red")
 
                         rollText = Text(Point(275,200), "Roll: " + str(die1) + " + " + str(die2) + " = " + str(die1+die2))
-
                         rollText.setSize(25)
                         rollText.draw(win)
+
+                        middlePotText = Text(Point(275,310), "Middle Pot: " + str(middlePot))
+                        middlePotText.setSize(15)
+                        middlePotText.draw(win)
+
+                        #Printing to terminal
+                        print("Roll: " + str(die1) + " + " + str(die2) + " = " + str(die1+die2))
+                        print("Money" + ": " + str(playerMoneyList[p]))
+
                         if turnsPlayed % turnSkip == 0:
                             win.getMouse()
+
+
                         rollText.setTextColor("white")
+                        middlePotText.setTextColor("white")
+
 
                 turnsPlayed += 1
                 boxValues[posList[p]] += 1
@@ -583,28 +707,28 @@ def playGame(win):
     nonProperties = [0,2,4,7,10,17,20,22,30,33,36,38]
 
 ###Percent landed on each square
-    # for v in range(len(ultimateBoxValues)):
-    #     ultimateBoxValues[v] = round(ultimateBoxValues[v]/(j+1)*100,3)
-    # print(ultimateBoxValues)
-    #
-    #
-    # #Sort the percentages in a list - used for color coding
-    # sortedValues = ultimateBoxValues.copy()
-    # for i in range(len(nonProperties)):
-    #     sortedValues.pop(nonProperties[i]-i)
-    # sortedValues.sort()
-    # print(sortedValues)
-    #
-    # #Draw on the board color coded
-    # gradient = getGradientListRGB("red","green",28)
-    #
-    # for i in range(len(ultimateBoxValues)):
-    #     if i not in nonProperties:
-    #         percent = Text(Point(coordinateValues[i][0],coordinateValues[i][1]), ultimateBoxValues[i])
-    #         v = sortedValues.index(ultimateBoxValues[i])
-    #         textcolor = color_rgb(gradient[v][0],gradient[v][1],gradient[v][2])
-    #         percent.setTextColor(textcolor)
-    #         percent.draw(win)
+    for v in range(len(ultimateBoxValues)):
+        ultimateBoxValues[v] = round(ultimateBoxValues[v]/(j+1)*100,3)
+    print(ultimateBoxValues)
+
+
+    #Sort the percentages in a list - used for color coding
+    sortedValues = ultimateBoxValues.copy()
+    for i in range(len(nonProperties)):
+        sortedValues.pop(nonProperties[i]-i)
+    sortedValues.sort()
+    print(sortedValues)
+
+    #Draw on the board color coded
+    gradient = getGradientListRGB("red","green",28)
+
+    for i in range(len(ultimateBoxValues)):
+        if i not in nonProperties:
+            percent = Text(Point(coordinateValues[i][0],coordinateValues[i][1]), ultimateBoxValues[i])
+            v = sortedValues.index(ultimateBoxValues[i])
+            textcolor = color_rgb(gradient[v][0],gradient[v][1],gradient[v][2])
+            percent.setTextColor(textcolor)
+            percent.draw(win)
 
 ###Wins,Loss,Tie Ratio by player
     for i in range(len(wins)):
@@ -642,32 +766,29 @@ def playGame(win):
             textcolor = color_rgb(gradient[v][0],gradient[v][1],gradient[v][2])
             percent.setTextColor(textcolor)
             percent.draw(win)
-            print(winningProperties[i])
 
 ### Properties lost on
-    for p in range(len(propertyLostOn)):
-        propertyLostOn[p] = propertyLostOn[p]/(j+1)
-
-    print (propertyLostOn)
-
-    #Sort the percentages in a list - used for color coding
-    sortedValues = propertyLostOn.copy()
-    for i in range(len(nonProperties)):
-        sortedValues.pop(nonProperties[i]-i)
-    sortedValues.sort()
-
-    #Draw on the board color coded
-    gradient = getGradientListRGB("red","green",28)
-
-    for i in range(len(propertyLostOn)):
-        if i not in nonProperties:
-            percent = Text(Point(coordinateValues[i][0],coordinateValues[i][1]), propertyLostOn[i])
-            v = sortedValues.index(propertyLostOn[i])
-            textcolor = color_rgb(gradient[v][0],gradient[v][1],gradient[v][2])
-            percent.setTextColor(textcolor)
-            percent.draw(win)
-            print(propertyLostOn[i])
-
+    # for p in range(len(propertyLostOn)):
+    #     propertyLostOn[p] = propertyLostOn[p]/(j+1)
+    #
+    #
+    #
+    # #Sort the percentages in a list - used for color coding
+    # sortedValues = propertyLostOn.copy()
+    # for i in range(len(nonProperties)):
+    #     sortedValues.pop(nonProperties[i]-i)
+    # sortedValues.sort()
+    #
+    # #Draw on the board color coded
+    # gradient = getGradientListRGB("red","green",28)
+    #
+    # for i in range(len(propertyLostOn)):
+    #     if i not in nonProperties:
+    #         percent = Text(Point(coordinateValues[i][0],coordinateValues[i][1]), propertyLostOn[i])
+    #         v = sortedValues.index(propertyLostOn[i])
+    #         textcolor = color_rgb(gradient[v][0],gradient[v][1],gradient[v][2])
+    #         percent.setTextColor(textcolor)
+    #         percent.draw(win)
 
 def main():
     win = GraphWin('Face', 550, 550) # give title and dimensions
