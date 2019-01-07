@@ -4,6 +4,8 @@ from random import shuffle
 from colour import Color
 
 def drawBoard(win):
+
+    #Drawing grid
     for r in range(0,550,50):
         line = Line(Point(r,0),Point(r,550))
         line.draw(win)
@@ -15,53 +17,29 @@ def drawBoard(win):
     rectangle.draw(win)
 
     #Text
-    namesListColumn1 = ["Free_Parking","New York_Avenue","Tennessee_Avenue","Community_Chest","St. James_Place","Pennsylvania_Railroad","Virginia_Avenue","States_Avenue","Electric_Company","St. Charles_Place","In_Jail"]
-    for num in range(len(namesListColumn1)):
-        name = namesListColumn1[num]
-        pos = name.find("_")
-        labelTop = Text(Point(25,10 + num * 50), name[:pos])
-        labelBottom = Text(Point(25,20 + num * 50), name[pos+1:])
+    coordinateValues = []
+    for br in range(10,-1,-1):
+        coordinateValues.append((25 + br * 50,500))
+    for lc in range(9,0,-1):
+        coordinateValues.append((25, lc * 50))
+    for tr in range(11):
+        coordinateValues.append((25 + tr * 50, 0))
+    for rc in range(1,10):
+        coordinateValues.append((525, rc * 50))
+
+    names = ['GO_','Mediterr..._Avenue', 'Community_Chest', 'Baltic_Avenue', 'Income_Tax', 'Reading_Railroad', 'Oriental_Avenue', 'Chance_', 'Vermont_Avenue', 'Connecticut_Avenue', 'In_Jail', 'St. Charles_Place', 'Electric_Company', 'States_Avenue', 'Virginia_Avenue', 'Pennsylvania_Railroad', 'St. James_Place', 'Community_Chest', 'Tennessee_Avenue', 'New York_Avenue', 'Free_Parking', 'Kentucky_Avenue', 'Chance_', 'Indiana_Avenue', 'Illinois_Avenue', 'B. & O._Railroad', 'Atlantic_Avenue', 'Ventnor_Avenue', 'Water_Works', 'Marvin_Gardens', 'Go To_Jail', 'Pacific_Avenue', 'North Carolina_Avenue', 'Community_Chest', 'Pennsylvania_Avenue', 'Short_Line', 'Chance_', 'Park_Place', 'Luxury_Tax', 'Boardwalk_']
+
+    for n in range(len(names)):
+        name = names[n]
+        br = name.find("_")
+        labelTop = Text(Point(coordinateValues[n][0],10+coordinateValues[n][1]), name[:br])
+        labelBottom = Text(Point(coordinateValues[n][0],20+coordinateValues[n][1]), name[br+1:])
         labelTop.setSize(10)
         labelBottom.setSize(10)
         labelTop.draw(win)
         labelBottom.draw(win)
 
-    namesListColumn2 = ["Go To_Jail","Pacific_Avenue","North Carolina_Avenue","Community_Chest","Pennsylvania_Avenue","Short_Line","Chance_","Park_Place","Luxury_Tax","Boardwalk_","GO_"]
-    for num in range(len(namesListColumn2)):
-        name = namesListColumn2[num]
-        pos = name.find("_")
-        labelTop = Text(Point(525,10 + num * 50), name[:pos])
-        labelBottom = Text(Point(525,20 + num * 50), name[pos+1:])
-        labelTop.setSize(10)
-        labelBottom.setSize(10)
-        labelTop.draw(win)
-        labelBottom.draw(win)
-
-
-    namesListRow1 = ["Kentucky_Avenue","Chance_","Indiana_Avenue","Illinois_Avenue","B. & O._Railroad","Atlantic_Avenue","Ventnor_Avenue","Water_Works","Marvin_Gardens"]
-    for num in range(1,len(namesListRow1)+1):
-        name = namesListRow1[num-1]
-        pos = name.find("_")
-        labelTop = Text(Point(25 + num * 50,10), name[:pos])
-        labelBottom = Text(Point(25 + num * 50,20), name[pos+1:])
-        labelTop.setSize(10)
-        labelBottom.setSize(10)
-        labelTop.draw(win)
-        labelBottom.draw(win)
-
-    namesListRow2 = ["Connecticut_Avenue","Vermont_Avenue","Chance_","Oriental_Avenue","Reading_Railroad","Income_Tax","Baltic_Avenue","Community_Chest","Mediterr..._Avenue"]
-    for num in range(1,len(namesListRow2)+1):
-        name = namesListRow2[num-1]
-        pos = name.find("_")
-        labelTop = Text(Point(25 + num * 50,510), name[:pos])
-        labelBottom = Text(Point(25 + num * 50,520), name[pos+1:])
-        labelTop.setSize(10)
-        labelBottom.setSize(10)
-        labelTop.draw(win)
-        labelBottom.draw(win)
-
-
-    #Big Monopoly
+    #Big Monopoly Text
     monopolyTitle = Text(Point(275,275),"Monopoly")
     monopolyTitle.setSize(35)
     monopolyTitle.draw(win)

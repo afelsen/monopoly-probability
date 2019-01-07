@@ -22,12 +22,12 @@ There are two modes in which this application can be used:
 
   ##########################################
 
-Line 82-92: Basics
+Line 60-70: Basics
   * numPlayers: The number of players in the game
   * turnByTurn: Set as "True" for a single game simulation. False for a 10,000 game analysis
   * turnSkip: During a single game, this determines how many turns are played after each mouse click
 
-Line 207-219: Starting values
+Line 185-196: Starting values
 * playerMoneyList: The starting money for each player
 * propertiesOwnedList: Properties owned for each player
 * posList: The starting points for each player
