@@ -55,20 +55,7 @@ def getGradientListRGB(color1,color2,length):
         colors[i] = (newcolor[0],newcolor[1],newcolor[2])
     return colors
 
-def playGame(win):
-
-    ################## How many players? ####################
-    numPlayers = 3
-    #########################################################
-
-    ################ Auto or turn by turn? ##################
-    turnByTurn = False
-    #########################################################
-
-    ########## Move how many turns at a time? ###############
-    turnSkip = 1
-    #########################################################
-
+def playGame(win,numPlayersO,turnByTurnO,turnSkipO,playerMoneyListO,propertiesOwnedListO,posListO,masterHousesListO,masterMortgageListO,middlePotO,masterPropertiesOwnedListO):
 
     #Coordinate values of each tile on the board
     coordinateValues = []
@@ -107,16 +94,30 @@ def playGame(win):
     fourHousesRent = [None,160,None,320,None,"R",400,None,400,450,None,625,"U",625,700,"R",750,None,750,800,None,875,None,875,925,"R",975,975,"U",1025,None,1100,1100,None,1200,"R",None,1300,None,1700]
     hotelRent = [None,250,None,450,None,"R",550,None,550,600,None,750,"U",750,900,"R",950,None,950,1000,None,1050,None,1050,1100,"R",1150,1150,"U",1200,None,1275,1275,None,1400,"R",None,1500,None,2000]
 
+    numPlayers = numPlayersO
+    turnByTurn = turnByTurnO
+    turnSkip = turnSkipO
+
     wins = [0]*numPlayers
     losses = [0]*numPlayers
     ties = [0]*numPlayers
 
     winningProperties = [0]*40
+    losingProperties = [0]*40
     propertyLostOn = [0]*40
-
 
     #Game is played 10000 times
     for j in range(1000):
+
+        playerMoneyList = playerMoneyListO.copy()
+        propertiesOwnedList = [[],[],[],[],[],[],[],[],[],[],[]]
+        for n in range(len(propertiesOwnedListO)):
+            propertiesOwnedList[n] = propertiesOwnedListO[n].copy()
+        posList = posListO.copy()
+        masterHousesList = masterHousesListO.copy()
+        masterMortgageList = masterMortgageListO.copy()
+        middlePot = middlePotO
+        masterPropertiesOwnedList = masterPropertiesOwnedListO.copy()
 
         turnsPlayed = 0
 
@@ -135,22 +136,17 @@ def playGame(win):
         ChanceFreePos = [(120,120),(470,120),(120,430),(470,430)]
         ChanceFreeTextList = []
 
-        playerMoneyList = []
-        propertiesOwnedList = [[],[],[],[]]
-
         #Jail
         getOutofJailCard = [0]*numPlayers
-        inJail = [False,False,False]
+        inJail = [False]*numPlayers
 
         #Count how many doubles have been thrown (or how many times has been rolled to escape jail)
         rollCounter = 0
         #How long a player has been in jail
         inJailCounter = 0
 
-
-        #Creating most of the player-related middle text (and initializing the money)
+        #Creating most of the player-related middle text
         for p in range(numPlayers):
-            playerMoneyList.append(500+200+150+80+50+30+7)
             if turnByTurn:
                 playerTextList.append(Text(Point(playerTextPos[p][0],playerTextPos[p][1]),"Player" + str(p+1) + ": " + str(playerMoneyList[p])))
                 playerTextList[p].setTextColor(colors[p])
@@ -168,39 +164,6 @@ def playGame(win):
                 ChanceFreeTextList.append(Text(Point(ChanceFreePos[p][0],ChanceFreePos[p][1]),"Free"))
                 ChanceFreeTextList[p].setTextColor("white")
                 ChanceFreeTextList[p].draw(win)
-
-
-        #The position of the players
-        posList = []
-        for p in range(numPlayers):
-            posList.append(0)
-
-        masterPropertiesOwnedList = []
-        masterHousesList = [0]*40
-        masterMortgageList = []
-
-        middlePot = 500
-
-
-        ###########Change Starting Values###########
-        # playerMoneyList = [1017,1017,1017,1017]
-        # propertiesOwnedList = [[6,8,9],[],[],[]]
-        # posList = [0,0,0,0]
-
-        # masterHousesList[*] = *
-        # masterHousesList[*] = ...
-        #
-        # masterMortgageList += [*,*,...]
-        #
-        # middlePot = *
-        #############################################
-
-
-        #Only necessary if changing starting properties, but doesn't hurt to leave uncommented
-        for player in propertiesOwnedList:
-            for property in player:
-                masterPropertiesOwnedList.append(property)
-
 
         #Shuffle chance cards
         chance = [i for i in chanceCards]
@@ -248,7 +211,7 @@ def playGame(win):
                             while playerMoneyList[p] > 200 + propertyHouseCost[v]:
                                 playerMoneyList[p] -= propertyHouseCost[v]
                                 if len(m) == 3:
-                                    if masterHousesList[m[0]] >= 5 or masterHousesList[m[1]] >= 5 or masterHousesList[m[2]] >= 5:
+                                    if masterHousesList[m[0]] >= 5 and masterHousesList[m[1]] >= 5 and masterHousesList[m[2]] >= 5:
                                         break
 
                                     if masterHousesList[m[2]] <= masterHousesList[m[1]] and masterHousesList[m[1]] <= masterHousesList[m[0]]:
@@ -259,7 +222,7 @@ def playGame(win):
                                         masterHousesList[m[0]] += 1
 
                                 if len(m) == 2:
-                                    if masterHousesList[m[0]] >= 5 or masterHousesList[m[1]] >= 5:
+                                    if masterHousesList[m[0]] >= 5 and masterHousesList[m[1]] >= 5:
                                         break
 
                                     if masterHousesList[m[1]] <= masterHousesList[m[0]] and masterHousesList[m[1]] < 5:
@@ -320,7 +283,6 @@ def playGame(win):
                             inJailCounter += 1
 
 
-
                     #If you've rolled doubles three times
                     if rollCounter >= 3:
                         inJail[p] = True
@@ -331,7 +293,7 @@ def playGame(win):
 
                     posList[p] += die1 + die2
 
-                    #If you get snake eyes
+                    #If you roll snake eyes
                     if die1 == 1 and die2 == 1:
                         playerMoneyList[p] += 100
 
@@ -597,6 +559,8 @@ def playGame(win):
                             masterHousesList[property] = 0
                         losses[p] += 1
                         propertyLostOn[posList[p]] += 1
+                        for property in propertiesOwnedList[p]:
+                            losingProperties[property] += 1
                         players.remove(p)
                         done = True
 
@@ -621,6 +585,7 @@ def playGame(win):
                         done = True
                         for player in players:
                             ties[player] += 1
+                        players = [] #This is important to stop continuing the for loop. It can cause the value of ties to be much higher than it actually is
 
 
                     #Only run this if you want to simulate each turn at a time
@@ -676,46 +641,24 @@ def playGame(win):
             boxValues[v] = (boxValues[v]/turnsPlayed)
             ultimateBoxValues[v] += boxValues[v]
 
-        #Making sure it adds up to 100
-        # accum = 0
-        # for value in boxValues:
-        #     accum += value
-        # print(accum)
-
     nonProperties = [0,2,4,7,10,17,20,22,30,33,36,38]
 
-###Percent landed on each square
-    for v in range(len(ultimateBoxValues)):
-        ultimateBoxValues[v] = round(ultimateBoxValues[v]/(j+1)*100,3)
-    print(ultimateBoxValues)
-
-
-    #Sort the percentages in a list - used for color coding
-    sortedValues = ultimateBoxValues.copy()
-    for i in range(len(nonProperties)):
-        sortedValues.pop(nonProperties[i]-i)
-    sortedValues.sort()
-    print(sortedValues)
-
-    #Draw on the board color coded
-    gradient = getGradientListRGB("red","green",28)
-
-    for i in range(len(ultimateBoxValues)):
-        if i not in nonProperties:
-            percent = Text(Point(coordinateValues[i][0],coordinateValues[i][1]), ultimateBoxValues[i])
-            v = sortedValues.index(ultimateBoxValues[i])
-            textcolor = color_rgb(gradient[v][0],gradient[v][1],gradient[v][2])
-            percent.setTextColor(textcolor)
-            percent.draw(win)
 
 ###Wins,Loss,Tie Ratio by player
+    numWins = 0
+    numLosses = 0
+    numTies = 0
+
     for i in range(len(wins)):
+        numWins += wins[i]
         wins[i] = wins[i]/(j+1)
 
     for i in range(len(losses)):
+        numLosses += losses[i]
         losses[i] = losses[i]/(j+1)
 
     for i in range(len(ties)):
+        numTies += ties[i]
         ties[i] = ties[i]/(j+1)
 
     print(wins)
@@ -723,10 +666,54 @@ def playGame(win):
     print(ties)
 
 
+
+    wlt = Text(Point(275,420), "Wins | " + str(wins))
+    wlt.setTextColor('green')
+    wlt.draw(win)
+    wlt = Text(Point(275,440), "Losses | " + str(losses))
+    wlt.setTextColor('red')
+    wlt.draw(win)
+    wlt = Text(Point(275,460), "Ties | " + str(ties))
+    wlt.setTextColor('orange')
+    wlt.draw(win)
+
+
+###Percent landed on each square
+    # for v in range(len(ultimateBoxValues)):
+    #     ultimateBoxValues[v] = round(ultimateBoxValues[v]/(j+1)*100,3)
+    # print(ultimateBoxValues)
+    #
+    #
+    # #Sort the percentages in a list - used for color coding
+    # sortedValues = ultimateBoxValues.copy()
+    # for i in range(len(nonProperties)):
+    #     sortedValues.pop(nonProperties[i]-i)
+    # sortedValues.sort()
+    # print(sortedValues)
+    #
+    # #Draw on the board color coded
+    # gradient = getGradientListRGB("red","green",28)
+    #
+    # for i in range(len(ultimateBoxValues)):
+    #     if i not in nonProperties:
+    #         percent = Text(Point(coordinateValues[i][0],coordinateValues[i][1]), ultimateBoxValues[i])
+    #         v = sortedValues.index(ultimateBoxValues[i])
+    #         textcolor = color_rgb(gradient[v][0],gradient[v][1],gradient[v][2])
+    #         percent.setTextColor(textcolor)
+    #         percent.draw(win)
+
 ### Properties that the winners owned
 
+    accum = 0
     for p in range(len(winningProperties)):
-        winningProperties[p] = winningProperties[p]/(j+1)
+        accum += winningProperties[p]
+        winningProperties[p] = round(winningProperties[p]/numWins,3)
+
+    accum = Text(Point(150,100), "Winner property percent: " + str(round(accum/numWins/28*100,2)))
+    accum.setTextColor('green')
+    accum.draw(win)
+
+
 
 
     #Sort the percentages in a list - used for color coding
@@ -745,36 +732,127 @@ def playGame(win):
             percent.setTextColor(textcolor)
             percent.draw(win)
 
+###Properties that losers owned
+    accum = 0
+    for p in range(len(losingProperties)):
+        accum += losingProperties[p]
+        losingProperties[p] = round(losingProperties[p]/numLosses,3)
+
+    accum = Text(Point(400,100), "Loser property percent: " + str(round(accum/numLosses/28*100,2)))
+    accum.setTextColor('red')
+    accum.draw(win)
+
+
+
+    #Sort the percentages in a list - used for color coding
+    sortedValues = losingProperties.copy()
+    sortedValues.sort()
+    sortedValues = sortedValues[12:]
+
+    #Draw on the board color coded
+    gradient = getGradientListRGB("red","green",28)
+
+    for i in range(len(losingProperties)):
+        if i not in nonProperties:
+            percent = Text(Point(coordinateValues[i][0],coordinateValues[i][1]), losingProperties[i])
+            v = sortedValues.index(losingProperties[i])
+            textcolor = color_rgb(gradient[v][0],gradient[v][1],gradient[v][2])
+            percent.setTextColor(textcolor)
+            percent.draw(win)
+
 ### Properties lost on
-    # for p in range(len(propertyLostOn)):
-    #     propertyLostOn[p] = propertyLostOn[p]/(j+1)
-    #
-    #
-    #
-    # #Sort the percentages in a list - used for color coding
-    # sortedValues = propertyLostOn.copy()
-    # for i in range(len(nonProperties)):
-    #     sortedValues.pop(nonProperties[i]-i)
-    # sortedValues.sort()
-    #
-    # #Draw on the board color coded
-    # gradient = getGradientListRGB("red","green",28)
-    #
-    # for i in range(len(propertyLostOn)):
-    #     if i not in nonProperties:
-    #         percent = Text(Point(coordinateValues[i][0],coordinateValues[i][1]), propertyLostOn[i])
-    #         v = sortedValues.index(propertyLostOn[i])
-    #         textcolor = color_rgb(gradient[v][0],gradient[v][1],gradient[v][2])
-    #         percent.setTextColor(textcolor)
-    #         percent.draw(win)
+#     for p in range(len(propertyLostOn)):
+#         propertyLostOn[p] = round(propertyLostOn[p]/numLosses,3)
+#
+#
+#
+#     #Sort the percentages in a list - used for color coding
+#     sortedValues = propertyLostOn.copy()
+#     for i in range(len(nonProperties)):
+#         sortedValues.pop(nonProperties[i]-i)
+#     sortedValues.sort()
+#
+#     #Draw on the board color coded
+#     gradient = getGradientListRGB("red","green",28)
+#
+#     for i in range(len(propertyLostOn)):
+#         if i not in nonProperties:
+#             percent = Text(Point(coordinateValues[i][0],coordinateValues[i][1]), propertyLostOn[i])
+#             v = sortedValues.index(propertyLostOn[i])
+#             textcolor = color_rgb(gradient[v][0],gradient[v][1],gradient[v][2])
+#             percent.setTextColor(textcolor)
+#             percent.draw(win)
 
 def main():
+
+    ################## Edit Starting Values ####################
+    numPlayers = 3 #Number of players
+    turnByTurn = False #True for one game at a time, False for 10,000 game simulation
+    turnSkip = 1 #Number of turns played after click
+
+    playerMoneyList = [1017,1017,1017,1017,1017,1017,1017,1017,1017,1017] #Starting money
+    propertiesOwnedList = [[],[],[],[],[],[],[],[],[],[]] #Starting properties (0-39)
+    posList = [0,0,0,0,0,0,0,0,0,0] #Starting position (0-39)
+
+    masterHousesList = [
+    0,
+    0, #Mediterranean
+    0,
+    0, #Baltic
+    0,
+    0,
+    0, #Oriental
+    0,
+    0, #Vermont
+    0, #Connecticut
+    0,
+    0, #St. Charles
+    0,
+    0, #States
+    0, #Virginia
+    0,
+    0, #St. James
+    0,
+    0, #Tennessee
+    0, #New York
+    0,
+    0, #Kentucky
+    0,
+    0, #Indiana
+    0, #Illinois
+    0,
+    0, #Atlantic
+    0, #Ventnor
+    0,
+    0, #Marvin Gardens
+    0,
+    0, #Pacific
+    0, #North Carolina
+    0,
+    0, #Pennsylvania
+    0,
+    0,
+    0, #Park Place
+    0,
+    0 #Boardwalk
+    ]
+
+    masterMortgageList = []
+
+    middlePot = 500
+
+    masterPropertiesOwnedList = []
+    #Only necessary if changing starting properties, but doesn't hurt to leave uncommented
+    for player in propertiesOwnedList:
+            for property in player:
+                masterPropertiesOwnedList.append(property)
+    #######################################################
+
+
     win = GraphWin('Face', 550, 550) # give title and dimensions
+
     drawBoard(win)
-
-    playGame(win)
-
-
+    playGame(win,numPlayers,turnByTurn,turnSkip,playerMoneyList,propertiesOwnedList,posList,masterHousesList,masterMortgageList,middlePot,masterPropertiesOwnedList)
 
     win.getMouse()
     win.close()

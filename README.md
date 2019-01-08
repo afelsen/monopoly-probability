@@ -14,20 +14,18 @@ There are two modes in which this application can be used:
 2. 10,000 Game Simulation: This simulates 10,000 games (but does not display changes to the game board). At the end, statistics are displayed on the game board.
 
 ## Changing modes, altering starting conditions:
-* Certain parts of the code can be edited to change modes and the starting conditions of players. These parts are clearly indicated in the code, surrounded by # symbols. The values that can be altered are listed below.
+* Certain parts of the code can be edited to change modes and the starting conditions of players. These parts are clearly indicated in main(), surrounded by # symbols.
 
-  ############### Change this ##############
+  ############### Edit Values Below ##############
 
-  code
+  values
 
-  ##########################################
+  ################################################
 
-Line 60-70: Basics
-  * numPlayers: The number of players in the game
-  * turnByTurn: Set as "True" for a single game simulation. False for a 10,000 game analysis
-  * turnSkip: During a single game, this determines how many turns are played after each mouse click
-
-Line 185-196: Starting values
+Values:
+* numPlayers: The number of players in the game
+* turnByTurn: Set as "True" for a single game simulation. False for a 10,000 game analysis
+* turnSkip: During a single game, this determines how many turns are played after each mouse click
 * playerMoneyList: The starting money for each player
 * propertiesOwnedList: Properties owned for each player
 * posList: The starting points for each player
