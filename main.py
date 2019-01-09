@@ -3,8 +3,16 @@ import random
 from random import shuffle
 from colour import Color
 
-
 def getGradientListRGB(color1,color2,length):
+    '''
+        Creates a color gradient between two colors and returns the color values in a list
+        args:
+            color1 (str) - The beginning color
+            color2 (str) - The ending color
+            length (int) - The length of the gradient list
+        returns:
+            colors: The gradient list between the two colors
+    '''
     red = Color(color1)
     colors = list(red.range_to(Color(color2),length))
     for i in range(len(colors)):
@@ -89,6 +97,9 @@ class Game:
         self.nonProperties = [0,2,4,7,10,17,20,22,30,33,36,38]
 
     def drawBoard(self):
+        '''
+            Draws the game board
+        '''
 
         #Drawing grid
         for r in range(0,550,50):
@@ -130,6 +141,10 @@ class Game:
         monopolyTitle.draw(self.win)
 
     def simulate(self):
+        '''
+            Simulates a full game of monopoly
+        '''
+
         self.playerMoneyList = self.playerMoneyListO.copy()
         self.propertiesOwnedList = [[],[],[],[],[],[],[],[],[],[],[]]
         for n in range(len(self.propertiesOwnedListO)):
@@ -612,7 +627,7 @@ class Game:
                         done = True
                         for player in self.players:
                             self.wins[player] += 1
-                            self.gamesWon[player].append(j+1)
+                            self.gamesWon[player].append(self.j+1)
                             #Adding up properties owned
                             for property in self.propertiesOwnedList[player]:
                                 self.winningProperties[property] += 1
@@ -700,29 +715,39 @@ class Game:
 
 
     def simulateMany(self,num):
-        for j in range(num):
+        '''
+            Simulates a specific number of games
+            args: num (int) - The number of games to simulate
+        '''
+        for self.j in range(num):
             self.simulate()
 
-
     def findStrategy(self):
+        '''
+            Changes vairables to find the ideal strategy
+        '''
         pass
 
-    def winLossTieRatio(self):
-        numWins = 0
-        numLosses = 0
-        numTies = 0
+    def displayWinLossTieRatio(self):
+        '''
+            Displays each player's win, loss and tie ratio
+        '''
+
+        self.numWins = 0
+        self.numLosses = 0
+        self.numTies = 0
 
         for i in range(len(self.wins)):
-            numWins += self.wins[i]
+            self.numWins += self.wins[i]
             self.wins[i] = self.wins[i]/(self.j+1)
 
         for i in range(len(self.losses)):
-            numLosses += self.losses[i]
+            self.numLosses += self.losses[i]
             self.losses[i] = self.losses[i]/(self.j+1)
 
-        for i in range(len(ties)):
-            numTies += ties[i]
-            ties[i] = ties[i]/(self.j+1)
+        for i in range(len(self.ties)):
+            self.numTies += self.ties[i]
+            self.ties[i] = self.ties[i]/(self.j+1)
 
         print(self.wins)
         print(self.losses)
@@ -738,221 +763,205 @@ class Game:
         wlt.setTextColor('orange')
         wlt.draw(self.win)
 
-'''
-def playGame(win,numPlayersO,turnByTurnO,turnSkipO,playerMoneyListO,propertiesOwnedListO,posListO,masterHousesListO,masterMortgageListO,middlePotO,masterPropertiesOwnedListO):
-
-    #Game is played 10000 times
-
-
-
-###Wins,Loss,Tie Ratio by player
-
+    def displayPercentLandedOn(self):
+        '''
+            Percent of the time players landed on each square
+        '''
+        for v in range(len(self.ultimateBoxValues)):
+            self.ultimateBoxValues[v] = round(self.ultimateBoxValues[v]/(self.j+1)*100,3)
+        print(self.ultimateBoxValues)
 
 
-###Percent landed on each square
-    # for v in range(len(ultimateBoxValues)):
-    #     ultimateBoxValues[v] = round(ultimateBoxValues[v]/(j+1)*100,3)
-    # print(ultimateBoxValues)
-    #
-    #
-    # #Sort the percentages in a list - used for color coding
-    # sortedValues = ultimateBoxValues.copy()
-    # for i in range(len(nonProperties)):
-    #     sortedValues.pop(nonProperties[i]-i)
-    # sortedValues.sort()
-    # print(sortedValues)
-    #
-    # #Draw on the board color coded
-    # gradient = getGradientListRGB("red","green",28)
-    #
-    # for i in range(len(ultimateBoxValues)):
-    #     if i not in nonProperties:
-    #         percent = Text(Point(coordinateValues[i][0],coordinateValues[i][1]), ultimateBoxValues[i])
-    #         v = sortedValues.index(ultimateBoxValues[i])
-    #         textcolor = color_rgb(gradient[v][0],gradient[v][1],gradient[v][2])
-    #         percent.setTextColor(textcolor)
-    #         percent.draw(win)
+        #Sort the percentages in a list - used for color coding
+        sortedValues = self.ultimateBoxValues.copy()
+        for i in range(len(self.nonProperties)):
+            sortedValues.pop(self.nonProperties[i]-i)
+        sortedValues.sort()
+        print(sortedValues)
 
-    print("Average Turns:" + str(averageTurns/(j+1)))
-    print("Max Turns:" + str(maxTurns))
+        #Draw on the board color coded
+        gradient = getGradientListRGB("red","green",28)
 
-### Properties that the winners owned
+        for i in range(len(self.ultimateBoxValues)):
+            if i not in self.nonProperties:
+                percent = Text(Point(self.coordinateValues[i][0],self.coordinateValues[i][1]), self.ultimateBoxValues[i])
+                v = sortedValues.index(self.ultimateBoxValues[i])
+                textcolor = color_rgb(gradient[v][0],gradient[v][1],gradient[v][2])
+                percent.setTextColor(textcolor)
+                percent.draw(self.win)
 
-    accum = 0
-    for p in range(len(winningProperties)):
-        accum += winningProperties[p]
-        winningProperties[p] = round(winningProperties[p]/numWins,3)
+        print("Average Turns:" + str(self.averageTurns/(self.j+1)))
+        print("Max Turns:" + str(self.maxTurns))
 
-    accum = Text(Point(150,100), "Winner property percent: " + str(round(accum/numWins/28*100,2)))
-    accum.setTextColor('green')
-    accum.draw(win)
+    def displayWinningProperties(self):
+        accum = 0
+        for p in range(len(self.winningProperties)):
+            accum += self.winningProperties[p]
+            self.winningProperties[p] = round(self.winningProperties[p]/self.numWins,3)
+
+        accum = Text(Point(150,100), "Winner property percent: " + str(round(accum/self.numWins/28*100,2)))
+        accum.setTextColor('green')
+        accum.draw(self.win)
 
 
 
 
-    #Sort the percentages in a list - used for color coding
-    sortedValues = winningProperties.copy()
-    sortedValues.sort()
-    sortedValues = sortedValues[12:]
+        #Sort the percentages in a list - used for color coding
+        sortedValues = self.winningProperties.copy()
+        sortedValues.sort()
+        sortedValues = sortedValues[12:]
 
-    #Draw on the board color coded
-    gradient = getGradientListRGB("red","green",28)
+        #Draw on the board color coded
+        gradient = getGradientListRGB("red","green",28)
 
-    for i in range(len(winningProperties)):
-        if i not in nonProperties:
-            percent = Text(Point(coordinateValues[i][0],coordinateValues[i][1]-10), winningProperties[i])
-            v = sortedValues.index(winningProperties[i])
-            textcolor = color_rgb(gradient[v][0],gradient[v][1],gradient[v][2])
-            percent.setTextColor(textcolor)
-            percent.draw(win)
+        for i in range(len(self.winningProperties)):
+            if i not in self.nonProperties:
+                percent = Text(Point(self.coordinateValues[i][0],self.coordinateValues[i][1]-10), self.winningProperties[i])
+                v = sortedValues.index(self.winningProperties[i])
+                textcolor = color_rgb(gradient[v][0],gradient[v][1],gradient[v][2])
+                percent.setTextColor(textcolor)
+                percent.draw(self.win)
 
-# ###Properties that losers owned
-#     accum = 0
-#     for p in range(len(losingProperties)):
-#         accum += losingProperties[p]
-#         losingProperties[p] = round(losingProperties[p]/numLosses,3)
-#
-#     accum = Text(Point(400,100), "Loser property percent: " + str(round(accum/numLosses/28*100,2)))
-#     accum.setTextColor('red')
-#     accum.draw(win)
-#
-#
-#
-#     #Sort the percentages in a list - used for color coding
-#     sortedValues = losingProperties.copy()
-#     sortedValues.sort()
-#     sortedValues = sortedValues[12:]
-#
-#     #Draw on the board color coded
-#     gradient = getGradientListRGB("red","green",28)
-#
-#     for i in range(len(losingProperties)):
-#         if i not in nonProperties:
-#             percent = Text(Point(coordinateValues[i][0],coordinateValues[i][1]), losingProperties[i])
-#             v = sortedValues.index(losingProperties[i])
-#             textcolor = color_rgb(gradient[v][0],gradient[v][1],gradient[v][2])
-#             percent.setTextColor(textcolor)
-#             percent.draw(win)
+    def displayLosingProperties(self):
+        accum = 0
+        for p in range(len(self.losingProperties)):
+            accum += self.losingProperties[p]
+            self.losingProperties[p] = round(self.losingProperties[p]/self.numLosses,3)
 
-## Properties lost on
-    for p in range(len(propertyLostOn)):
-        propertyLostOn[p] = round(propertyLostOn[p]/numLosses,3)
+        accum = Text(Point(400,100), "Loser property percent: " + str(round(accum/self.numLosses/28*100,2)))
+        accum.setTextColor('red')
+        accum.draw(self.win)
 
 
 
-    #Sort the percentages in a list - used for color coding
-    sortedValues = propertyLostOn.copy()
-    for i in range(len(nonProperties)):
-        sortedValues.pop(nonProperties[i]-i)
-    sortedValues.sort()
+        #Sort the percentages in a list - used for color coding
+        sortedValues = self.losingProperties.copy()
+        sortedValues.sort()
+        sortedValues = sortedValues[12:]
 
-    #Draw on the board color coded
-    gradient = getGradientListRGB("red","green",28)
+        #Draw on the board color coded
+        gradient = getGradientListRGB("red","green",28)
 
-    for i in range(len(propertyLostOn)):
-        if i not in nonProperties:
-            percent = Text(Point(coordinateValues[i][0],coordinateValues[i][1]), propertyLostOn[i])
-            v = sortedValues.index(propertyLostOn[i])
-            textcolor = color_rgb(gradient[v][0],gradient[v][1],gradient[v][2])
-            percent.setTextColor(textcolor)
-            percent.draw(win)
+        for i in range(len(self.losingProperties)):
+            if i not in self.nonProperties:
+                percent = Text(Point(self.coordinateValues[i][0],self.coordinateValues[i][1]), self.losingProperties[i])
+                v = sortedValues.index(self.losingProperties[i])
+                textcolor = color_rgb(gradient[v][0],gradient[v][1],gradient[v][2])
+                percent.setTextColor(textcolor)
+                percent.draw(self.win)
 
+    def displayLostOnProperties(self):
+        for p in range(len(self.propertyLostOn)):
+            self.propertyLostOn[p] = round(self.propertyLostOn[p]/self.numLosses,3)
 
-    win.getMouse()
+        #Sort the percentages in a list - used for color coding
+        sortedValues = self.propertyLostOn.copy()
+        for i in range(len(self.nonProperties)):
+            sortedValues.pop(self.nonProperties[i]-i)
+        sortedValues.sort()
 
-#Displaying Specific Games
-    gameNum = None
-    players = list(range(numPlayers))
+        #Draw on the board color coded
+        gradient = getGradientListRGB("red","green",28)
 
-    for p in players:
-        print("Games Won P" + str(p+1) + ": " + str(gamesWon[p]))
+        for i in range(len(self.propertyLostOn)):
+            if i not in self.nonProperties:
+                percent = Text(Point(self.coordinateValues[i][0],self.coordinateValues[i][1]), self.propertyLostOn[i])
+                v = sortedValues.index(self.propertyLostOn[i])
+                textcolor = color_rgb(gradient[v][0],gradient[v][1],gradient[v][2])
+                percent.setTextColor(textcolor)
+                percent.draw(self.win)
 
-    while gameNum != -1:
-        #Resetting board
-        rect = Rectangle(Point(0, 0), Point(550,550))
-        rect.setFill("white")
-        rect.draw(win)
-        drawBoard(win)
-
-        gameNum = int(input("Input game number to display (0 to quit): ")) - 1
-        gameList = gameInfoDict[gameNum]
-
-        playerMoneyList = gameList[0]
-        propertiesOwnedList = gameList[1]
-        posList = gameList[2]
-        masterHousesList = gameList[3]
-        masterMortgageList = gameList[4]
-        middlePot = gameList[5]
-        masterPropertiesOwnedList = gameList[6]
-        turnsPlayed = gameList[7]
-        inJail = gameList[8]
-
-        playerTextList = []
-        playerCircleList = []
-        for p in range(numPlayers):
-            playerTextList.append(Text(Point(playerTextPos[p][0],playerTextPos[p][1]),"Player" + str(p+1) + ": " + str(playerMoneyList[p])))
-            playerTextList[p].setTextColor(colors[p])
-            playerTextList[p].draw(win)
-
-            playerCircleList.append(Circle(Point(525,525), 7))
-            playerCircleList[p].draw(win)
-            playerCircleList[p].setFill(colors[p])
+    def displaySpecificGame(self):
+        self.win.getMouse()
+        gameNum = None
+        players = list(range(self.numPlayers))
 
         for p in players:
+            print("Games Won P" + str(p+1) + ": " + str(self.gamesWon[p]))
 
-            playerCircleList[p].setOutline("white")
-            playerCircleList[p].setFill("white")
-            playerTextList[p].setTextColor("white")
+        while gameNum != -1:
+            #Resetting board
+            rect = Rectangle(Point(0, 0), Point(550,550))
+            rect.setFill("white")
+            rect.draw(self.win)
+            self.drawBoard()
 
-            playerCircleList[p] = Circle(Point(coordinateValues[posList[p]][0]+2*p,coordinateValues[posList[p]][1]), 6)
-            playerCircleList[p].draw(win)
-            playerCircleList[p].setFill(colors[p])
+            gameNum = int(input("Input game number to display (0 to quit): ")) - 1
+            self.__dict__ = self.gameState[gameNum]
 
-            playerTextList[p] = Text(Point(playerTextPos[p][0],playerTextPos[p][1]),"Player" + str(p+1) + ": " + str(playerMoneyList[p]))
-            playerTextList[p].setTextColor(colors[p])
-            playerTextList[p].draw(win)
+            # playerMoneyList = gameList[0]
+            # propertiesOwnedList = gameList[1]
+            # posList = gameList[2]
+            # masterHousesList = gameList[3]
+            # masterMortgageList = gameList[4]
+            # middlePot = gameList[5]
+            # masterPropertiesOwnedList = gameList[6]
+            # turnsPlayed = gameList[7]
+            # inJail = gameList[8]
 
-        #Jail text
-        jailIcon = Text(Point(coordinateValues[10][0],coordinateValues[10][1]-10), "J")
-        jailIcon.setTextColor("white")
-        jailIcon.draw(win)
+            playerTextList = []
+            playerCircleList = []
+            for p in range(self.numPlayers):
+                playerTextList.append(Text(Point(self.playerTextPos[p][0],self.playerTextPos[p][1]),"Player" + str(p+1) + ": " + str(self.playerMoneyList[p])))
+                playerTextList[p].setTextColor(self.colors[p])
+                playerTextList[p].draw(self.win)
 
-        for player in players:
-            if inJail[player] == True:
-                jailIcon.setTextColor("red")
+                playerCircleList.append(Circle(Point(525,525), 7))
+                playerCircleList[p].draw(self.win)
+                playerCircleList[p].setFill(self.colors[p])
 
-        middlePotText = Text(Point(275,310), "Middle Pot: " + str(middlePot))
-        middlePotText.setSize(15)
-        middlePotText.draw(win)
+            for p in players:
 
-        turnsPlayedText = Text(Point(275,480), "Turns Played: " + str(turnsPlayed))
-        turnsPlayedText.setSize(15)
-        turnsPlayedText.draw(win)
+                playerCircleList[p].setOutline("white")
+                playerCircleList[p].setFill("white")
+                playerTextList[p].setTextColor("white")
 
-        for p in range(len(propertiesOwnedList)):
-            for property in propertiesOwnedList[p]:
-                propertyText = Text(Point(coordinateValues[property][0],coordinateValues[property][1] - 10), p+1)
-                propertyText.setTextColor(colors[p])
-                propertyText.draw(win)
+                playerCircleList[p] = Circle(Point(self.coordinateValues[self.posList[p]][0]+2*p,self.coordinateValues[self.posList[p]][1]), 6)
+                playerCircleList[p].draw(self.win)
+                playerCircleList[p].setFill(self.colors[p])
 
-        for h in range(len(masterHousesList)):
-            if masterHousesList[h] > 0:
-                housesText = Text(Point(coordinateValues[h][0]-20,coordinateValues[h][1] - 10), "h: " + str(masterHousesList[h]))
-                housesText.setTextColor("green")
-                housesText.draw(win)
-        for property in masterMortgageList:
-            mortgageText = Text(Point(coordinateValues[property][0]+17,coordinateValues[property][1] - 10), "M")
-            mortgageText.setTextColor("Red")
-            mortgageText.draw(win)
+                playerTextList[p] = Text(Point(self.playerTextPos[p][0],self.playerTextPos[p][1]),"Player" + str(p+1) + ": " + str(self.playerMoneyList[p]))
+                playerTextList[p].setTextColor(self.colors[p])
+                playerTextList[p].draw(self.win)
+
+            #Jail text
+            jailIcon = Text(Point(self.coordinateValues[10][0],self.coordinateValues[10][1]-10), "J")
+            jailIcon.setTextColor("white")
+            jailIcon.draw(self.win)
+
+            for player in self.players:
+                if self.inJail[player] == True:
+                    jailIcon.setTextColor("red")
+
+            middlePotText = Text(Point(275,310), "Middle Pot: " + str(self.middlePot))
+            middlePotText.setSize(15)
+            middlePotText.draw(self.win)
+
+            turnsPlayedText = Text(Point(275,480), "Turns Played: " + str(self.turnsPlayed))
+            turnsPlayedText.setSize(15)
+            turnsPlayedText.draw(self.win)
+
+            for p in range(len(self.propertiesOwnedList)):
+                for property in self.propertiesOwnedList[p]:
+                    propertyText = Text(Point(self.coordinateValues[property][0],self.coordinateValues[property][1] - 10), p+1)
+                    propertyText.setTextColor(self.colors[p])
+                    propertyText.draw(self.win)
+
+            for h in range(len(self.masterHousesList)):
+                if self.masterHousesList[h] > 0:
+                    housesText = Text(Point(self.coordinateValues[h][0]-20,self.coordinateValues[h][1] - 10), "h: " + str(self.masterHousesList[h]))
+                    housesText.setTextColor("green")
+                    housesText.draw(self.win)
+            for property in self.masterMortgageList:
+                mortgageText = Text(Point(self.coordinateValues[property][0]+17,self.coordinateValues[property][1] - 10), "M")
+                mortgageText.setTextColor("Red")
+                mortgageText.draw(self.win)
 
 
-        win.getMouse()
-        middlePotText.setTextColor("white")
-        turnsPlayedText.setTextColor("white")
+            self.win.getMouse()
+            self.middlePotText.setTextColor("white")
+            self.turnsPlayedText.setTextColor("white")
 
-
-
-'''
 
 def main():
 
@@ -1023,17 +1032,30 @@ def main():
     win = GraphWin('Monopoly Simulator', 550, 550) # give title and dimensions
 
     game1 = Game(win,numPlayers,turnByTurn,turnSkip,playerMoneyList,propertiesOwnedList,posList,masterHousesList,masterMortgageList,middlePot,masterPropertiesOwnedList)
-    game1.drawBoard()
-    game1.simulateMany(1000)
-    game1.winLossTieRatio()
 
+    game1.drawBoard()
+    game1.simulateMany(100)
+    game1.displayWinLossTieRatio()
+
+    #Displayed top row on properties
+    game1.displayWinningProperties()
+
+    #Displayed bottom row on properties - choose 1
+    # game1.displayPercentLandedOn()
+    # game1.displayLosingProperties()
+    game1.displayLostOnProperties()
+
+
+    game1.displaySpecificGame()
 
     win.getMouse()
     win.close()
 
 main()
 
-
 #To do:
 
 # Don't pay rent if owner is in jail
+# Fix occasional bug: File "main.py", line 606, in simulate
+#     self.players.remove(p)
+#     ValueError: list.remove(x): x not in list
