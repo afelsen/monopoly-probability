@@ -3,46 +3,6 @@ import random
 from random import shuffle
 from colour import Color
 
-def drawBoard(win):
-
-    #Drawing grid
-    for r in range(0,550,50):
-        line = Line(Point(r,0),Point(r,550))
-        line.draw(win)
-    for c in range(0,550,50):
-        line = Line(Point(0,c),Point(550,c))
-        line.draw(win)
-    rectangle = Rectangle(Point(50,50), Point(500,500))
-    rectangle.setFill('white')
-    rectangle.draw(win)
-
-    #Text
-    coordinateValues = []
-    for br in range(10,-1,-1):
-        coordinateValues.append((25 + br * 50,500))
-    for lc in range(9,0,-1):
-        coordinateValues.append((25, lc * 50))
-    for tr in range(11):
-        coordinateValues.append((25 + tr * 50, 0))
-    for rc in range(1,10):
-        coordinateValues.append((525, rc * 50))
-
-    names = ['GO_','Mediterr..._Avenue', 'Community_Chest', 'Baltic_Avenue', 'Income_Tax', 'Reading_Railroad', 'Oriental_Avenue', 'Chance_', 'Vermont_Avenue', 'Connecticut_Avenue', 'In_Jail', 'St. Charles_Place', 'Electric_Company', 'States_Avenue', 'Virginia_Avenue', 'Pennsylvania_Railroad', 'St. James_Place', 'Community_Chest', 'Tennessee_Avenue', 'New York_Avenue', 'Free_Parking', 'Kentucky_Avenue', 'Chance_', 'Indiana_Avenue', 'Illinois_Avenue', 'B. & O._Railroad', 'Atlantic_Avenue', 'Ventnor_Avenue', 'Water_Works', 'Marvin_Gardens', 'Go To_Jail', 'Pacific_Avenue', 'North Carolina_Avenue', 'Community_Chest', 'Pennsylvania_Avenue', 'Short_Line', 'Chance_', 'Park_Place', 'Luxury_Tax', 'Boardwalk_']
-
-    for n in range(len(names)):
-        name = names[n]
-        br = name.find("_")
-        labelTop = Text(Point(coordinateValues[n][0],10+coordinateValues[n][1]), name[:br])
-        labelBottom = Text(Point(coordinateValues[n][0],20+coordinateValues[n][1]), name[br+1:])
-        labelTop.setSize(10)
-        labelBottom.setSize(10)
-        labelTop.draw(win)
-        labelBottom.draw(win)
-
-    #Big Monopoly Text
-    monopolyTitle = Text(Point(275,275),"Monopoly")
-    monopolyTitle.setSize(35)
-    monopolyTitle.draw(win)
 
 def getGradientListRGB(color1,color2,length):
     red = Color(color1)
@@ -55,607 +15,663 @@ def getGradientListRGB(color1,color2,length):
         colors[i] = (newcolor[0],newcolor[1],newcolor[2])
     return colors
 
-def playGame(win,numPlayersO,turnByTurnO,turnSkipO,playerMoneyListO,propertiesOwnedListO,posListO,masterHousesListO,masterMortgageListO,middlePotO,masterPropertiesOwnedListO):
+class Game:
+    def __init__(self,win,numPlayersO,turnByTurnO,turnSkipO,playerMoneyListO,propertiesOwnedListO,posListO,masterHousesListO,masterMortgageListO,middlePotO,masterPropertiesOwnedListO):
+        self.win = win
+        self.numPlayersO = numPlayersO
+        self.turnByTurnO = turnByTurnO
+        self.turnSkipO = turnSkipO
+        self.playerMoneyListO = playerMoneyListO
+        self.propertiesOwnedListO = propertiesOwnedListO
+        self.posListO = posListO
+        self.masterHousesListO = masterHousesListO
+        self.masterMortgageListO = masterMortgageListO
+        self.middlePotO = middlePotO
+        self.masterPropertiesOwnedListO = masterPropertiesOwnedListO
 
-    #Coordinate values of each tile on the board
-    coordinateValues = []
-    for br in range(10,-1,-1):
-        coordinateValues.append((25 + br * 50,540))
-    for lc in range(9,0,-1):
-        coordinateValues.append((25, 40  + lc * 50))
-    for tr in range(11):
-        coordinateValues.append((25 + tr * 50, 40))
-    for rc in range(1,10):
-        coordinateValues.append((525, 40  + rc * 50))
+        #Coordinate values of each tile on the board
+        self.coordinateValues = []
+        for br in range(10,-1,-1):
+            self.coordinateValues.append((25 + br * 50,540))
+        for lc in range(9,0,-1):
+            self.coordinateValues.append((25, 40  + lc * 50))
+        for tr in range(11):
+            self.coordinateValues.append((25 + tr * 50, 40))
+        for rc in range(1,10):
+            self.coordinateValues.append((525, 40  + rc * 50))
 
 
-    #Sets the percent landed on each space to 0
-    boxValues = [0]*40
-    #This is the percent landed in each space after x number of games
-    ultimateBoxValues = [0]*40
+        #Sets the percent landed on each space to 0
+        self.boxValues = [0]*40
+        #This is the percent landed in each space after x number of games
+        self.ultimateBoxValues = [0]*40
 
-    chanceCards = [0,24,11,'U','R','R',"+50","Get out of jail","Back 3","-15",5,39,"giveeach50","+150","+100","Hotel/houses"]
+        self.chanceCards = [0,24,11,'U','R','R',"+50","Get out of jail","Back 3","-15",5,39,"giveeach50","+150","+100","Hotel/houses"]
 
-    communityCards = ["+100","+100","+100","-150","+10","+45","geteach50","-50",0,"Get out of jail","-100","+200","Hotel/houses","+25","+20","J"]
+        self.communityCards = ["+100","+100","+100","-150","+10","+45","geteach50","-50",0,"Get out of jail","-100","+200","Hotel/houses","+25","+20","J"]
 
-    #Property prices
-    propertyPriceList = [None,60,None,60,None,200,100,None,100,120,None,140,150,140,160,200,180,None,180,200,None,220,None,220,240,200,260,260,150,280,None,300,300,None,320,200,None,350,None,400]
+        #Property prices
+        self.propertyPriceList = [None,60,None,60,None,200,100,None,100,120,None,140,150,140,160,200,180,None,180,200,None,220,None,220,240,200,260,260,150,280,None,300,300,None,320,200,None,350,None,400]
 
-    propertyHouseCost = [None,50,None,50,None,"R",50,None,50,50,None,100,"U",100,100,"R",100,None,100,100,None,150,None,150,150,"R",150,150,"U",150,None,200,200,None,200,"R",None,200,None,200]
+        self.propertyHouseCost = [None,50,None,50,None,"R",50,None,50,50,None,100,"U",100,100,"R",100,None,100,100,None,150,None,150,150,"R",150,150,"U",150,None,200,200,None,200,"R",None,200,None,200]
 
-    monopolies = [(1,3),(6,8,9),(11,13,14),(16,18,19),(21,23,24),(26,27,29),(31,32,34),(37,39)]
+        self.monopolies = [(1,3),(6,8,9),(11,13,14),(16,18,19),(21,23,24),(26,27,29),(31,32,34),(37,39)]
 
-    #Property rent
-    propertyRentList = [None,2,None,4,None,"R",6,None,6,8,None,10,"U",10,12,"R",14,None,14,16,None,18,None,18,20,"R",22,22,"U",24,None,26,26,None,28,"R",None,35,None,40]
-    oneHouseRent = [None,10,None,20,None,"R",30,None,30,40,None,50,"U",50,60,"R",70,None,70,80,None,90,None,90,100,"R",110,110,"U",120,None,130,130,None,150,"R",None,175,None,200]
-    twoHousesRent = [None,30,None,60,None,"R",90,None,90,100,None,150,
-    "U",150,180,"R",200,None,200,220,None,250,None,250,300,"R",330,330,"U",360,None,390,390,None,450,"R",None,500,None,600]
-    threeHousesRent = [None,90,None,180,None,"R",270,None,270,300,None,450,"U",450,500,"R",550,None,550,600,None,700,None,700,750,"R",800,800,"U",850,None,900,900,None,1000,"R",None,1100,None,1400]
-    fourHousesRent = [None,160,None,320,None,"R",400,None,400,450,None,625,"U",625,700,"R",750,None,750,800,None,875,None,875,925,"R",975,975,"U",1025,None,1100,1100,None,1200,"R",None,1300,None,1700]
-    hotelRent = [None,250,None,450,None,"R",550,None,550,600,None,750,"U",750,900,"R",950,None,950,1000,None,1050,None,1050,1100,"R",1150,1150,"U",1200,None,1275,1275,None,1400,"R",None,1500,None,2000]
+        #Property rent
+        self.propertyRentList = [None,2,None,4,None,"R",6,None,6,8,None,10,"U",10,12,"R",14,None,14,16,None,18,None,18,20,"R",22,22,"U",24,None,26,26,None,28,"R",None,35,None,40]
+        self.oneHouseRent = [None,10,None,20,None,"R",30,None,30,40,None,50,"U",50,60,"R",70,None,70,80,None,90,None,90,100,"R",110,110,"U",120,None,130,130,None,150,"R",None,175,None,200]
+        self.twoHousesRent = [None,30,None,60,None,"R",90,None,90,100,None,150,
+        "U",150,180,"R",200,None,200,220,None,250,None,250,300,"R",330,330,"U",360,None,390,390,None,450,"R",None,500,None,600]
+        self.threeHousesRent = [None,90,None,180,None,"R",270,None,270,300,None,450,"U",450,500,"R",550,None,550,600,None,700,None,700,750,"R",800,800,"U",850,None,900,900,None,1000,"R",None,1100,None,1400]
+        self.fourHousesRent = [None,160,None,320,None,"R",400,None,400,450,None,625,"U",625,700,"R",750,None,750,800,None,875,None,875,925,"R",975,975,"U",1025,None,1100,1100,None,1200,"R",None,1300,None,1700]
+        self.hotelRent = [None,250,None,450,None,"R",550,None,550,600,None,750,"U",750,900,"R",950,None,950,1000,None,1050,None,1050,1100,"R",1150,1150,"U",1200,None,1275,1275,None,1400,"R",None,1500,None,2000]
 
-    numPlayers = numPlayersO
-    turnByTurn = turnByTurnO
-    turnSkip = turnSkipO
+        self.numPlayers = self.numPlayersO
+        self.turnByTurn = self.turnByTurnO
+        self.turnSkip = self.turnSkipO
 
-    wins = [0]*numPlayers
-    losses = [0]*numPlayers
-    ties = [0]*numPlayers
+        self.wins = [0]*self.numPlayers
+        self.losses = [0]*self.numPlayers
+        self.ties = [0]*self.numPlayers
 
-    winningProperties = [0]*40
-    losingProperties = [0]*40
-    propertyLostOn = [0]*40
+        self.winningProperties = [0]*40
+        self.losingProperties = [0]*40
+        self.propertyLostOn = [0]*40
 
-    averageTurns = 0
-    maxTurns = 0
+        self.averageTurns = 0
+        self.maxTurns = 0
 
-    gameInfoDict = {}
-    gamesWon = [[],[],[],[],[],[],[],[],[],[]]
+        self.gameState = []
+        self.gamesWon = [[],[],[],[],[],[],[],[],[],[]]
 
-    #Game is played 10000 times
-    for j in range(1000):
+    def drawBoard(self):
 
-        playerMoneyList = playerMoneyListO.copy()
-        propertiesOwnedList = [[],[],[],[],[],[],[],[],[],[],[]]
-        for n in range(len(propertiesOwnedListO)):
-            propertiesOwnedList[n] = propertiesOwnedListO[n].copy()
-        posList = posListO.copy()
-        masterHousesList = masterHousesListO.copy()
-        masterMortgageList = masterMortgageListO.copy()
-        middlePot = middlePotO
-        masterPropertiesOwnedList = masterPropertiesOwnedListO.copy()
+        #Drawing grid
+        for r in range(0,550,50):
+            line = Line(Point(r,0),Point(r,550))
+            line.draw(self.win)
+        for c in range(0,550,50):
+            line = Line(Point(0,c),Point(550,c))
+            line.draw(self.win)
+        rectangle = Rectangle(Point(50,50), Point(500,500))
+        rectangle.setFill('white')
+        rectangle.draw(self.win)
 
-        turnsPlayed = 0
+        #Text
+        coordinateValues = []
+        for br in range(10,-1,-1):
+            coordinateValues.append((25 + br * 50,500))
+        for lc in range(9,0,-1):
+            coordinateValues.append((25, lc * 50))
+        for tr in range(11):
+            coordinateValues.append((25 + tr * 50, 0))
+        for rc in range(1,10):
+            coordinateValues.append((525, rc * 50))
+
+        names = ['GO_','Mediterr..._Avenue', 'Community_Chest', 'Baltic_Avenue', 'Income_Tax', 'Reading_Railroad', 'Oriental_Avenue', 'Chance_', 'Vermont_Avenue', 'Connecticut_Avenue', 'In_Jail', 'St. Charles_Place', 'Electric_Company', 'States_Avenue', 'Virginia_Avenue', 'Pennsylvania_Railroad', 'St. James_Place', 'Community_Chest', 'Tennessee_Avenue', 'New York_Avenue', 'Free_Parking', 'Kentucky_Avenue', 'Chance_', 'Indiana_Avenue', 'Illinois_Avenue', 'B. & O._Railroad', 'Atlantic_Avenue', 'Ventnor_Avenue', 'Water_Works', 'Marvin_Gardens', 'Go To_Jail', 'Pacific_Avenue', 'North Carolina_Avenue', 'Community_Chest', 'Pennsylvania_Avenue', 'Short_Line', 'Chance_', 'Park_Place', 'Luxury_Tax', 'Boardwalk_']
+
+        for n in range(len(names)):
+            name = names[n]
+            br = name.find("_")
+            labelTop = Text(Point(coordinateValues[n][0],10+coordinateValues[n][1]), name[:br])
+            labelBottom = Text(Point(coordinateValues[n][0],20+coordinateValues[n][1]), name[br+1:])
+            labelTop.setSize(10)
+            labelBottom.setSize(10)
+            labelTop.draw(self.win)
+            labelBottom.draw(self.win)
+
+        #Big Monopoly Text
+        monopolyTitle = Text(Point(275,275),"Monopoly")
+        monopolyTitle.setSize(35)
+        monopolyTitle.draw(self.win)
+
+    def simulate(self,j):
+        self.playerMoneyList = self.playerMoneyListO.copy()
+        self.propertiesOwnedList = [[],[],[],[],[],[],[],[],[],[],[]]
+        for n in range(len(self.propertiesOwnedListO)):
+            self.propertiesOwnedList[n] = self.propertiesOwnedListO[n].copy()
+        self.posList = self.posListO.copy()
+        self.masterHousesList = self.masterHousesListO.copy()
+        self.masterMortgageList = self.masterMortgageListO.copy()
+        self.middlePot = self.middlePotO
+        self.masterPropertiesOwnedList = self.masterPropertiesOwnedListO.copy()
+
+        self.turnsPlayed = 0
 
         #Number of players
-        players = list(range(numPlayers))
+        self.players = list(range(self.numPlayers))
 
         #initalizes players and text
-        colors = ["blue", "orange","purple","black","cyan","magenta","lime","gold","dark green","maroon"]
-        playerTextPos = []
-        if numPlayers > 2:
-            playerTextStep = 350//((numPlayers-1)//2)
+        self.colors = ["blue", "orange","purple","black","cyan","magenta","lime","gold","dark green","maroon"]
+        self.playerTextPos = []
+        self.CommunityFreePos = []
+        self.ChanceFreePos = []
+
+        if self.numPlayers > 2:
+            self.playerTextStep = 350//((self.numPlayers-1)//2)
         else:
-            playerTextStep = 0
-        for n in range(numPlayers):
+            self.playerTextStep = 0
+        for n in range(self.numPlayers):
             if n%2 == 0:
-                playerTextPos.append((100,100+((n+1)//2)*playerTextStep))
+                self.playerTextPos.append((100,100+((n+1)//2)*self.playerTextStep))
+                self.CommunityFreePos.append((80,120+((n+1)//2)*self.playerTextStep))
+                self.ChanceFreePos.append((120,120+((n+1)//2)*self.playerTextStep))
             else:
-                playerTextPos.append((450,100+(n//2)*playerTextStep))
+                self.playerTextPos.append((450,100+(n//2)*self.playerTextStep))
+                self.CommunityFreePos.append((430,120+((n+1)//2)*self.playerTextStep))
+                self.ChanceFreePos.append((470,120+((n+1)//2)*self.playerTextStep))
 
-        playerTextList = []
-        playerCircleList = []
 
-            #Get out of jail free cards
-        CommunityFreePos = [(80,120),(430,120),(80,430),(430,430)]
-        CommunityFreeTextList = []
-        ChanceFreePos = [(120,120),(470,120),(120,430),(470,430)]
-        ChanceFreeTextList = []
+        self.CommunityFreeTextList = []
+        self.ChanceFreeTextList = []
+
+        self.playerTextList = []
+        self.playerCircleList = []
 
         #Jail
-        getOutofJailCard = [0]*numPlayers
-        inJail = [False]*numPlayers
+        self.getOutofJailCard = [0]*self.numPlayers
+        self.inJail = [False]*self.numPlayers
 
         #Count how many doubles have been thrown (or how many times has been rolled to escape jail)
-        rollCounter = 0
+        self.rollCounter = 0
         #How long a player has been in jail
-        inJailCounter = 0
+        self.inJailCounter = 0
 
         #Creating most of the player-related middle text
-        for p in range(numPlayers):
-            if turnByTurn:
-                playerTextList.append(Text(Point(playerTextPos[p][0],playerTextPos[p][1]),"Player" + str(p+1) + ": " + str(playerMoneyList[p])))
-                playerTextList[p].setTextColor(colors[p])
-                playerTextList[p].draw(win)
+        for p in range(self.numPlayers):
+            if self.turnByTurn:
+                self.playerTextList.append(Text(Point(self.playerTextPos[p][0],self.playerTextPos[p][1]),"Player" + str(p+1) + ": " + str(self.playerMoneyList[p])))
+                self.playerTextList[p].setTextColor(self.colors[p])
+                self.playerTextList[p].draw(self.win)
 
-                playerCircleList.append(Circle(Point(525,525), 7))
-                playerCircleList[p].draw(win)
-                playerCircleList[p].setFill(colors[p])
+                self.playerCircleList.append(Circle(Point(525,525), 7))
+                self.playerCircleList[p].draw(self.win)
+                self.playerCircleList[p].setFill(self.colors[p])
 
                 #Get out of Jail Free icon
-                CommunityFreeTextList.append(Text(Point(CommunityFreePos[p][0],CommunityFreePos[p][1]),"Free"))
-                CommunityFreeTextList[p].setTextColor("white")
-                CommunityFreeTextList[p].draw(win)
+                self.CommunityFreeTextList.append(Text(Point(self.CommunityFreePos[p][0],self.CommunityFreePos[p][1]),"Free"))
+                self.CommunityFreeTextList[p].setTextColor("white")
+                self.CommunityFreeTextList[p].draw(self.win)
 
-                ChanceFreeTextList.append(Text(Point(ChanceFreePos[p][0],ChanceFreePos[p][1]),"Free"))
-                ChanceFreeTextList[p].setTextColor("white")
-                ChanceFreeTextList[p].draw(win)
+                self.ChanceFreeTextList.append(Text(Point(self.ChanceFreePos[p][0],self.ChanceFreePos[p][1]),"Free"))
+                self.ChanceFreeTextList[p].setTextColor("white")
+                self.ChanceFreeTextList[p].draw(self.win)
 
         #Shuffle chance cards
-        chance = [i for i in chanceCards]
-        shuffle(chance)
+        self.chance = [i for i in self.chanceCards]
+        shuffle(self.chance)
 
         #Shuffle community cards
-        community = [i for i in communityCards]
-        shuffle(community)
+        self.community = [i for i in self.communityCards]
+        shuffle(self.community)
 
         won = False
 
         while not won:
             #Roll for each player
-            for p in players:
+            for p in self.players:
                 done = False
                 rollCounter = 0
 
                 while not done:
-                    if turnByTurn:
+                    if self.turnByTurn:
                         print()
                         print("Player " + str(p+1))
-                        print("Pos: " + str(posList[p]))
+                        print("Pos: " + str(self.posList[p]))
 
                     #Unmortgaging properties
-                    for property in propertiesOwnedList[p]:
+                    for property in self.propertiesOwnedList[p]:
                         #First try to mortgage a property without a house
-                        if property in masterMortgageList and playerMoneyList[p] > (propertyPriceList[property]//2):
-                            masterMortgageList.remove(property)
-                            playerMoneyList[p] -= (propertyPriceList[property]//2)
+                        if property in self.masterMortgageList and self.playerMoneyList[p] > (self.propertyPriceList[property]//2):
+                            self.masterMortgageList.remove(property)
+                            self.playerMoneyList[p] -= (self.propertyPriceList[property]//2)
 
                             #drawing
-                            if turnByTurn:
-                                mortgageCircle = Circle(Point(coordinateValues[property][0]+17,coordinateValues[property][1] - 11),5)
+                            if self.turnByTurn:
+                                mortgageCircle = Circle(Point(self.coordinateValues[property][0]+17,self.coordinateValues[property][1] - 11),5)
                                 mortgageCircle.setFill("white")
                                 mortgageCircle.setOutline("white")
                                 mortgageCircle.draw(win)
 
                     #Buying houses
-                    for m in monopolies:
+                    for m in self.monopolies:
                         haveMonopoly = True
                         for v in m:
-                            if v not in propertiesOwnedList[p]:
+                            if v not in self.propertiesOwnedList[p]:
                                 haveMonopoly = False
                         if haveMonopoly == True:
-                            while playerMoneyList[p] > 200 + propertyHouseCost[v]:
-                                playerMoneyList[p] -= propertyHouseCost[v]
+                            while self.playerMoneyList[p] > 200 + self.propertyHouseCost[v]:
+                                self.playerMoneyList[p] -= self.propertyHouseCost[v]
                                 if len(m) == 3:
-                                    if masterHousesList[m[0]] >= 5 and masterHousesList[m[1]] >= 5 and masterHousesList[m[2]] >= 5:
+                                    if self.masterHousesList[m[0]] >= 5 and self.masterHousesList[m[1]] >= 5 and self.masterHousesList[m[2]] >= 5:
                                         break
 
-                                    if masterHousesList[m[2]] <= masterHousesList[m[1]] and masterHousesList[m[1]] <= masterHousesList[m[0]]:
-                                        masterHousesList[m[2]] += 1
-                                    elif masterHousesList[m[1]] <= masterHousesList[m[0]]:
-                                        masterHousesList[m[1]] += 1
+                                    if self.masterHousesList[m[2]] <= self.masterHousesList[m[1]] and self.masterHousesList[m[1]] <= self.masterHousesList[m[0]]:
+                                        self.masterHousesList[m[2]] += 1
+                                    elif self.masterHousesList[m[1]] <= self.masterHousesList[m[0]]:
+                                        self.masterHousesList[m[1]] += 1
                                     else:
-                                        masterHousesList[m[0]] += 1
+                                        self.masterHousesList[m[0]] += 1
 
                                 if len(m) == 2:
-                                    if masterHousesList[m[0]] >= 5 and masterHousesList[m[1]] >= 5:
+                                    if self.masterHousesList[m[0]] >= 5 and self.masterHousesList[m[1]] >= 5:
                                         break
 
-                                    if masterHousesList[m[1]] <= masterHousesList[m[0]] and masterHousesList[m[1]] < 5:
-                                        masterHousesList[m[1]] += 1
-                                    elif masterHousesList[m[0]] < 5:
-                                        masterHousesList[m[0]] += 1
+                                    if self.masterHousesList[m[1]] <= self.masterHousesList[m[0]] and self.masterHousesList[m[1]] < 5:
+                                        self.masterHousesList[m[1]] += 1
+                                    elif self.masterHousesList[m[0]] < 5:
+                                        self.masterHousesList[m[0]] += 1
 
-                            if turnByTurn:
+                            if self.turnByTurn:
                                 for i in range(len(m)):
-                                    housesText = Circle(Point(coordinateValues[m[i]][0]-15,coordinateValues[m[i]][1] - 10),5)
+                                    housesText = Circle(Point(self.coordinateValues[m[i]][0]-15,self.coordinateValues[m[i]][1] - 10),5)
                                     housesText.setFill("white")
                                     housesText.setOutline("white")
                                     housesText.draw(win)
                                 for i in range(len(m)):
-                                    housesText = Text(Point(coordinateValues[m[i]][0]-20,coordinateValues[m[i]][1] - 10), "h: " + str(masterHousesList[m[i]]))
+                                    housesText = Text(Point(self.coordinateValues[m[i]][0]-20,self.coordinateValues[m[i]][1] - 10), "h: " + str(self.masterHousesList[m[i]]))
                                     housesText.setTextColor("green")
                                     housesText.draw(win)
 
-                    die1 = random.randrange(1,7)
-                    die2 = random.randrange(1,7)
+                    self.die1 = random.randrange(1,7)
+                    self.die2 = random.randrange(1,7)
 
-                    if die1 != die2:
+                    if self.die1 != self.die2:
                         done = True
                     else:
-                        rollCounter += 1
+                        self.rollCounter += 1
 
                     #Jail functionality
-                    if inJail[p] == True:
-                        if getOutofJailCard[p] > 0:
-                            getOutofJailCard[p] -= 1
-                            inJail[p] = False
-                            inJailCounter = 0
-                            if turnByTurn:
-                                if getOutofJailCard[p] == 1:
-                                    ChanceFreeTextList[p].setTextColor("white")
+                    if self.inJail[p] == True:
+                        if self.getOutofJailCard[p] > 0:
+                            self.getOutofJailCard[p] -= 1
+                            self.inJail[p] = False
+                            self.inJailCounter = 0
+                            if self.turnByTurn:
+                                if self.getOutofJailCard[p] == 1:
+                                    self.ChanceFreeTextList[p].setTextColor("white")
                                 else:
-                                    CommunityFreeTextList[p].setTextColor("white")
-                                    ChanceFreeTextList[p].setTextColor("white")
-                        elif playerMoneyList[p] > 50:
-                            playerMoneyList[p] -= 50
-                            middlePot += 50
-                            inJail[p] = False
-                            inJailCounter = 0
-                        elif rollCounter > 0:
-                            inJail[p] = False
+                                    self.CommunityFreeTextList[p].setTextColor("white")
+                                    self.ChanceFreeTextList[p].setTextColor("white")
+                        elif self.playerMoneyList[p] > 50:
+                            self.playerMoneyList[p] -= 50
+                            self.middlePot += 50
+                            self.inJail[p] = False
+                            self.inJailCounter = 0
+                        elif self.rollCounter > 0:
+                            self.inJail[p] = False
                             #You don't move on the double, you roll again
-                            die1 = 0
-                            die2 = 0
-                            inJailCounter = 0
-                        elif inJailCounter >=3:
+                            self.die1 = 0
+                            self.die2 = 0
+                            self.inJailCounter = 0
+                        elif self.inJailCounter >=3:
                             #After three rolls, move out of jail but don't roll
-                            done = True
-                            inJail[p] = False
-                            inJailCounter = 0
+                            self.done = True
+                            self.inJail[p] = False
+                            self.inJailCounter = 0
                         else:
-                            die1 = 0
-                            die2 = 0
-                            inJailCounter += 1
+                            self.die1 = 0
+                            self.die2 = 0
+                            self.inJailCounter += 1
 
 
                     #If you've rolled doubles three times
-                    if rollCounter >= 3:
-                        inJail[p] = True
-                        posList[p] = 10
-                        rollCounter = 0
-                        die1 = 0
-                        die2 = 0
+                    if self.rollCounter >= 3:
+                        self.inJail[p] = True
+                        self.posList[p] = 10
+                        self.rollCounter = 0
+                        self.die1 = 0
+                        self.die2 = 0
 
-                    posList[p] += die1 + die2
+                    self.posList[p] += self.die1 + self.die2
 
                     #If you roll snake eyes
-                    if die1 == 1 and die2 == 1:
-                        playerMoneyList[p] += 100
+                    if self.die1 == 1 and self.die2 == 1:
+                        self.playerMoneyList[p] += 100
 
                     #Landing on go = extra $200
-                    if posList[p] == 40:
-                        playerMoneyList[p] += 200
+                    if self.posList[p] == 40:
+                        self.playerMoneyList[p] += 200
 
                     #If you pass go
-                    if posList[p] >= 40:
-                        posList[p] -= 40
-                        playerMoneyList[p] += 200
+                    if self.posList[p] >= 40:
+                        self.posList[p] -= 40
+                        self.playerMoneyList[p] += 200
 
                     #If you land on "Go to jail", go to jail
-                    if posList[p] == 30:
-                        posList[p] = 10
-                        inJail[p] = True
+                    if self.posList[p] == 30:
+                        self.posList[p] = 10
+                        self.inJail[p] = True
 
                     #If you land on "Free Parking", get the pot
-                    if posList[p] == 20:
-                        playerMoneyList[p] += middlePot
-                        middlePot = 500
+                    if self.posList[p] == 20:
+                        self.playerMoneyList[p] += self.middlePot
+                        self.middlePot = 500
 
                     #If you land on "chance"
-                    if posList[p] == 7 or posList[p] == 22 or posList[p] == 36:
-                        if len(chance) == 0:
-                            chance = [i for i in chanceCards]
-                            shuffle(chance)
-                        if isinstance(chance[0],int):
-                            posList[p] = chance[0]
-                        elif chance[0] == 'U':
-                            if posList[p] > 11:
-                                posList[p] = 28
+                    if self.posList[p] == 7 or self.posList[p] == 22 or self.posList[p] == 36:
+                        if len(self.chance) == 0:
+                            self.chance = [i for i in self.chanceCards]
+                            shuffle(self.chance)
+                        if isinstance(self.chance[0],int):
+                            self.posList[p] = self.chance[0]
+                        elif self.chance[0] == 'U':
+                            if self.posList[p] > 11:
+                                self.posList[p] = 28
                             else:
-                                posList[p] = 12
-                        elif chance[0] == 'R':
-                            if posList[p] < 5 or posList[p] >= 35:
-                                posList[p] = 5
-                            elif posList[p] < 15:
-                                posList[p] = 15
-                            elif posList[p] < 25:
-                                posList[p] = 25
+                                self.posList[p] = 12
+                        elif self.chance[0] == 'R':
+                            if self.posList[p] < 5 or self.posList[p] >= 35:
+                                self.posList[p] = 5
+                            elif self.posList[p] < 15:
+                                self.posList[p] = 15
+                            elif self.posList[p] < 25:
+                                self.posList[p] = 25
                             else:
-                                posList[p] = 35
-                        elif chance[0] == "Back 3":
-                            posList[p] -= 3
+                                self.posList[p] = 35
+                        elif self.chance[0] == "Back 3":
+                            self.posList[p] -= 3
 
                         #Money chance cards
-                        elif chance[0][0] == "+":
-                            playerMoneyList[p] += int(chance[0][1:])
-                        elif chance[0][0] == "-":
-                            playerMoneyList[p] -= int(chance[0][1:])
-                            middlePot += int(chance[0][1:])
+                        elif self.chance[0][0] == "+":
+                            self.playerMoneyList[p] += int(self.chance[0][1:])
+                        elif self.chance[0][0] == "-":
+                            self.playerMoneyList[p] -= int(self.chance[0][1:])
+                            self.middlePot += int(self.chance[0][1:])
 
                         #Other cards
-                        elif chance[0] == "giveeach50":
-                            for player in players:
-                                playerMoneyList[p] -= 50
-                                playerMoneyList[player] += 50
-                        elif chance[0] == "Get out of jail":
-                            getOutofJailCard[p] += 1
-                            if turnByTurn:
-                                ChanceFreeTextList[p].setTextColor("green")
-                        elif chance[0] == "Hotel/houses":
+                        elif self.chance[0] == "giveeach50":
+                            for player in self.players:
+                                self.playerMoneyList[p] -= 50
+                                self.playerMoneyList[player] += 50
+                        elif self.chance[0] == "Get out of jail":
+                            self.getOutofJailCard[p] += 1
+                            if self.turnByTurn:
+                                self.ChanceFreeTextList[p].setTextColor("green")
+                        elif self.chance[0] == "Hotel/houses":
                             pass
 
                         #Only run this if you want to simulate each turn at a time
-                        if turnByTurn:
-                            chanceText = Text(Point(275,400), "Chance: " + str(chance[0]))
+                        if self.turnByTurn:
+                            chanceText = Text(Point(275,400), "Chance: " + str(self.chance[0]))
                             chanceText.setSize(20)
-                            chanceText.draw(win)
-                            if turnsPlayed % turnSkip == 0:
-                                win.getMouse()
+                            chanceText.draw(self.win)
+                            if self.turnsPlayed % self.turnSkip == 0:
+                                self.win.getMouse()
                             chanceText.setTextColor("white")
 
-                            print("Chance: " + str(chance[0]))
-                        chance.pop(0)
+                            print("Chance: " + str(self.chance[0]))
+                        self.chance.pop(0)
 
                     #Community Chest
-                    if posList[p] == 2 or posList[p] == 17 or posList[p] == 33:
-                        if len(community) == 0:
-                            community = [i for i in communityCards]
-                            shuffle(community)
-                        if isinstance(community[0],int):
-                            posList[p] = community[0]
+                    if self.posList[p] == 2 or self.posList[p] == 17 or self.posList[p] == 33:
+                        if len(self.community) == 0:
+                            self.community = [i for i in self.communityCards]
+                            shuffle(self.community)
+                        if isinstance(self.community[0],int):
+                            self.posList[p] = self.community[0]
 
                         #Money cards
-                        elif community[0][0] == "+":
-                            playerMoneyList[p] += int(community[0][1:])
-                        elif community[0][0] == "-":
-                            playerMoneyList[p] -= int(community[0][1:])
-                            middlePot += int(community[0][1:])
+                        elif self.community[0][0] == "+":
+                            self.playerMoneyList[p] += int(self.community[0][1:])
+                        elif self.community[0][0] == "-":
+                            self.playerMoneyList[p] -= int(self.community[0][1:])
+                            self.middlePot += int(self.community[0][1:])
 
                         #Other cards
-                        elif community[0] == "geteach50":
-                            for player in players:
-                                playerMoneyList[p] += 50
-                                playerMoneyList[player] -= 50
-                        elif community[0] == "Get out of jail":
-                            getOutofJailCard[p] += 1
-                            if turnByTurn:
-                                CommunityFreeTextList[p].setTextColor("green")
-                        elif community[0] == "J":
-                            inJail[p] = True
-                            posList[p] = 10
-                        elif community[0] == "Hotel/houses":
+                        elif self.community[0] == "geteach50":
+                            for player in self.players:
+                                self.playerMoneyList[p] += 50
+                                self.playerMoneyList[player] -= 50
+                        elif self.community[0] == "Get out of jail":
+                            self.getOutofJailCard[p] += 1
+                            if self.turnByTurn:
+                                self.CommunityFreeTextList[p].setTextColor("green")
+                        elif self.community[0] == "J":
+                            self.inJail[p] = True
+                            self.posList[p] = 10
+                        elif self.community[0] == "Hotel/houses":
                             pass
 
                         #Only run this if you want to simulate each turn at a time
-                        if turnByTurn:
-                            communityText = Text(Point(275,400), "Community Chest: " + str(community[0]))
+                        if self.turnByTurn:
+                            communityText = Text(Point(275,400), "Community Chest: " + str(self.community[0]))
                             communityText.setSize(20)
-                            communityText.draw(win)
-                            if turnsPlayed % turnSkip == 0:
-                                win.getMouse()
+                            communityText.draw(self.win)
+                            if self.turnsPlayed % self.turnSkip == 0:
+                                self.win.getMouse()
                             communityText.setTextColor("white")
 
-                            print("Community Chest: " + str(community[0]))
+                            print("Community Chest: " + str(self.community[0]))
 
 
-                        community.pop(0)
+                        self.community.pop(0)
 
 
                     #If the player lands on an unowned property
-                    if isinstance(propertyPriceList[posList[p]],int) and (posList[p] not in masterPropertiesOwnedList):
+                    if isinstance(self.propertyPriceList[self.posList[p]],int) and (self.posList[p] not in self.masterPropertiesOwnedList):
                         #If the player can afford it
-                        if propertyPriceList[posList[p]] < playerMoneyList[p]:
-                            masterPropertiesOwnedList.append(posList[p])
-                            propertiesOwnedList[p].append(posList[p])
-                            playerMoneyList[p] -= propertyPriceList[posList[p]]
+                        if self.propertyPriceList[self.posList[p]] < self.playerMoneyList[p]:
+                            self.masterPropertiesOwnedList.append(self.posList[p])
+                            self.propertiesOwnedList[p].append(self.posList[p])
+                            self.playerMoneyList[p] -= self.propertyPriceList[self.posList[p]]
 
-                            if turnByTurn:
-                                propertyText = Text(Point(coordinateValues[posList[p]][0],coordinateValues[posList[p]][1] - 10), p+1)
-                                propertyText.setTextColor(colors[p])
-                                propertyText.draw(win)
+                            if self.turnByTurn:
+                                propertyText = Text(Point(self.coordinateValues[self.posList[p]][0],self.coordinateValues[self.posList[p]][1] - 10), p+1)
+                                propertyText.setTextColor(self.colors[p])
+                                propertyText.draw(self.win)
 
                     #If the player lands on a owned property (not mortgaged) - RENT
-                    if posList[p] in masterPropertiesOwnedList and posList[p] not in propertiesOwnedList[p] and posList[p] not in masterMortgageList:
-                        for player in range(len(propertiesOwnedList)):
-                            if posList[p] in propertiesOwnedList[player]:
-                                if isinstance(propertyRentList[posList[p]],int):
-                                    if masterHousesList[posList[p]] == 0:
-                                        playerMoneyList[p] -= propertyRentList[posList[p]]
-                                        playerMoneyList[player] += propertyRentList[posList[p]]
-                                    elif masterHousesList[posList[p]] == 1:
-                                        playerMoneyList[p] -= oneHouseRent[posList[p]]
-                                        playerMoneyList[player] += oneHouseRent[posList[p]]
-                                    elif masterHousesList[posList[p]] == 2:
-                                        playerMoneyList[p] -= twoHousesRent[posList[p]]
-                                        playerMoneyList[player] += twoHousesRent[posList[p]]
+                    if self.posList[p] in self.masterPropertiesOwnedList and self.posList[p] not in self.propertiesOwnedList[p] and self.posList[p] not in self.masterMortgageList:
+                        for player in range(len(self.propertiesOwnedList)):
+                            if self.posList[p] in self.propertiesOwnedList[player]:
+                                if isinstance(self.propertyRentList[self.posList[p]],int):
+                                    if self.masterHousesList[self.posList[p]] == 0:
+                                        self.playerMoneyList[p] -= self.propertyRentList[self.posList[p]]
+                                        self.playerMoneyList[player] += self.propertyRentList[self.posList[p]]
+                                    elif self.masterHousesList[self.posList[p]] == 1:
+                                        self.playerMoneyList[p] -= self.oneHouseRent[self.posList[p]]
+                                        self.playerMoneyList[player] += self.oneHouseRent[self.posList[p]]
+                                    elif self.masterHousesList[self.posList[p]] == 2:
+                                        self.playerMoneyList[p] -= self.twoHousesRent[self.posList[p]]
+                                        self.playerMoneyList[player] += self.twoHousesRent[self.posList[p]]
 
-                                    elif masterHousesList[posList[p]] == 3:
-                                        playerMoneyList[p] -= threeHousesRent[posList[p]]
-                                        playerMoneyList[player] += threeHousesRent[posList[p]]
+                                    elif self.masterHousesList[self.posList[p]] == 3:
+                                        self.playerMoneyList[p] -= self.threeHousesRent[self.posList[p]]
+                                        self.playerMoneyList[player] += self.threeHousesRent[self.posList[p]]
 
-                                    elif masterHousesList[posList[p]] == 4:
-                                        playerMoneyList[p] -= fourHousesRent[posList[p]]
-                                        playerMoneyList[player] += fourHousesRent[posList[p]]
+                                    elif self.masterHousesList[self.posList[p]] == 4:
+                                        self.playerMoneyList[p] -= self.fourHousesRent[self.posList[p]]
+                                        self.playerMoneyList[player] += self.fourHousesRent[self.posList[p]]
 
-                                    elif masterHousesList[posList[p]] == 5:
-                                        playerMoneyList[p] -= hotelRent[posList[p]]
-                                        playerMoneyList[player] += hotelRent[posList[p]]
+                                    elif self.masterHousesList[self.posList[p]] == 5:
+                                        self.playerMoneyList[p] -= self.hotelRent[self.posList[p]]
+                                        self.playerMoneyList[player] += self.hotelRent[self.posList[p]]
 
                                 #If it's a railroad
-                                elif propertyRentList[posList[p]] == "R":
+                                elif self.propertyRentList[self.posList[p]] == "R":
                                     multiplier = .5
-                                    if 5 in propertiesOwnedList[player]:
+                                    if 5 in self.propertiesOwnedList[player]:
                                         multiplier *= 2
-                                    if 15 in propertiesOwnedList[player]:
+                                    if 15 in self.propertiesOwnedList[player]:
                                         multiplier *= 2
-                                    if 25 in propertiesOwnedList[player]:
+                                    if 25 in self.propertiesOwnedList[player]:
                                         multiplier *= 2
-                                    if 35 in propertiesOwnedList[player]:
+                                    if 35 in self.propertiesOwnedList[player]:
                                         multiplier *= 2
                                     multiplier = int(multiplier)
-                                    playerMoneyList[p] -= 25*multiplier
-                                    playerMoneyList[player] += 25*multiplier
+                                    self.playerMoneyList[p] -= 25*multiplier
+                                    self.playerMoneyList[player] += 25*multiplier
                                 #If it's a utility
-                                elif propertyRentList[posList[p]] == "U":
-                                    playerMoneyList[p] -= (die1+die2)*10
-                                    playerMoneyList[player] += (die1+die2)*10
+                                elif self.propertyRentList[self.posList[p]] == "U":
+                                    self.playerMoneyList[p] -= (self.die1+self.die2)*10
+                                    self.playerMoneyList[player] += (self.die1+self.die2)*10
 
 
                     #Landing on squares that make you pay taxes
-                    if posList[p] == 4:
-                        if playerMoneyList[p] >= 2000:
-                            playerMoneyList[p] -= 200
-                            middlePot += 200
+                    if self.posList[p] == 4:
+                        if self.playerMoneyList[p] >= 2000:
+                            self.playerMoneyList[p] -= 200
+                            self.middlePot += 200
                         else:
-                            playerMoneyList[p] -= (playerMoneyList[p]//10)
-                            middlePot += (playerMoneyList[p]//10)
-                    if posList[p] == 38:
-                        playerMoneyList[p] -= 75
-                        middlePot += 75
+                            self.playerMoneyList[p] -= (self.playerMoneyList[p]//10)
+                            self.middlePot += (self.playerMoneyList[p]//10)
+                    if self.posList[p] == 38:
+                        self.playerMoneyList[p] -= 75
+                        self.middlePot += 75
 
                     #If you have zero or negative money after paying rent/taxes
-                    if playerMoneyList[p] <= 0:
+                    if self.playerMoneyList[p] <= 0:
                         for i in [True,False]: #On the first iteration only sell no houses, on the second iteration sell anything
-                            for property in propertiesOwnedList[p]:
+                            for property in self.propertiesOwnedList[p]:
                                 #First try to mortgage a property without a house
-                                if property not in masterMortgageList and masterHousesList[property] == 0 and i:
-                                    masterMortgageList.append(property)
-                                    playerMoneyList[p] += (propertyPriceList[property]//2)
+                                if property not in self.masterMortgageList and self.masterHousesList[property] == 0 and i:
+                                    self.masterMortgageList.append(property)
+                                    self.playerMoneyList[p] += (self.propertyPriceList[property]//2)
                                 #Second, sell anything
-                                elif property not in masterMortgageList and not i:
-                                    masterMortgageList.append(property)
-                                    playerMoneyList[p] += (propertyPriceList[property]//2)
+                                elif property not in self.masterMortgageList and not i:
+                                    self.masterMortgageList.append(property)
+                                    self.playerMoneyList[p] += (self.propertyPriceList[property]//2)
 
                                 #If nothing happened, break out of the loop
                                 else:
                                     continue
 
                                 #Printing it out
-                                if turnByTurn:
+                                if self.turnByTurn:
 
-                                    mortgageText = Text(Point(coordinateValues[property][0]+17,coordinateValues[property][1] - 10), "M")
+                                    mortgageText = Text(Point(self.coordinateValues[property][0]+17,self.coordinateValues[property][1] - 10), "M")
                                     mortgageText.setTextColor("Red")
                                     mortgageText.draw(win)
 
                                 #If the player has more than zero dollars, break out of the loop
-                                if playerMoneyList[p] > 0:
+                                if self.playerMoneyList[p] > 0:
                                     break
-                            if playerMoneyList[p] > 0:
+                            if self.playerMoneyList[p] > 0:
                                 break
 
                     #if the player still has zero or less money even after mortgaging, the player loses
-                    if playerMoneyList[p] <= 0:
+                    if self.playerMoneyList[p] <= 0:
 
                         #erasing player
-                        if turnByTurn:
+                        if self.turnByTurn:
                             #Player
-                            playerCircleList[p].setOutline("white")
-                            playerCircleList[p].setFill("white")
+                            self.playerCircleList[p].setOutline("white")
+                            self.playerCircleList[p].setFill("white")
 
-                        for property in propertiesOwnedList[p]:
+                        for property in self.propertiesOwnedList[p]:
 
                             #drawing
 
-                            if turnByTurn:
+                            if self.turnByTurn:
                                 #mortgage
-                                if property in masterMortgageList:
-                                    mortgageCircle = Circle(Point(coordinateValues[property][0]+17,coordinateValues[property][1] - 11),6)
+                                if property in self.masterMortgageList:
+                                    mortgageCircle = Circle(Point(self.coordinateValues[property][0]+17,self.coordinateValues[property][1] - 11),6)
                                     mortgageCircle.setFill("white")
                                     mortgageCircle.setOutline("white")
                                     mortgageCircle.draw(win)
 
                                 #Properties Owned
-                                propertyCircle = Circle(Point(coordinateValues[property][0],coordinateValues[property][1] - 10), 6)
+                                propertyCircle = Circle(Point(self.coordinateValues[property][0],self.coordinateValues[property][1] - 10), 6)
                                 propertyCircle.setFill("white")
                                 propertyCircle.setOutline("white")
                                 propertyCircle.draw(win)
 
                                 #Houses
-                                housesText = Circle(Point(coordinateValues[property][0]-15,coordinateValues[property][1] - 10),6)
+                                housesText = Circle(Point(self.coordinateValues[property][0]-15,self.coordinateValues[property][1] - 10),6)
                                 housesText.setFill("white")
                                 housesText.setOutline("white")
                                 housesText.draw(win)
 
                             #Remove properties from master lists
-                            if len(players) > 2: #This just helps with displaying 2nd place statistics
-                                if property in masterMortgageList:
-                                    masterMortgageList.remove(property)
-                                if property in masterPropertiesOwnedList:
-                                    masterPropertiesOwnedList.remove(property)
-                                masterHousesList[property] = 0
+                            if len(self.players) > 2: #This just helps with displaying 2nd place statistics
+                                if property in self.masterMortgageList:
+                                    self.masterMortgageList.remove(property)
+                                if property in self.masterPropertiesOwnedList:
+                                    self.masterPropertiesOwnedList.remove(property)
+                                self.masterHousesList[property] = 0
 
                         #If there are still players left, clear propertiesOwnedList - This is useful to show the statistics of 2nd place
-                        if len(players) > 2:
-                            propertiesOwnedList[p].clear()
+                        if len(self.players) > 2:
+                            self.propertiesOwnedList[p].clear()
 
-                        losses[p] += 1
-                        propertyLostOn[posList[p]] += 1
-                        for property in propertiesOwnedList[p]:
-                            losingProperties[property] += 1
-                        players.remove(p)
+                        self.losses[p] += 1
+                        self.propertyLostOn[self.posList[p]] += 1
+                        for property in self.propertiesOwnedList[p]:
+                            self.losingProperties[property] += 1
+                        self.players.remove(p)
                         done = True
 
                     #If there is only one player left
-                    if len(players) == 1:
+                    if len(self.players) == 1:
                         won = True
                         done = True
-                        for player in players:
-                            wins[player] += 1
-                            gamesWon[player].append(j+1)
+                        for player in self.players:
+                            self.wins[player] += 1
+                            self.gamesWon[player].append(j+1)
                             #Adding up properties owned
-                            for property in propertiesOwnedList[player]:
-                                winningProperties[property] += 1
+                            for property in self.propertiesOwnedList[player]:
+                                self.winningProperties[property] += 1
 
-                        if turnByTurn:
+                        if self.turnByTurn:
                             rect = Rectangle(Point(0, 0), Point(550,550))
                             rect.setFill("white")
-                            rect.draw(win)
-                            drawBoard(win)
-                        averageTurns += turnsPlayed
-                        if turnsPlayed > maxTurns:
-                            maxTurns = turnsPlayed
+                            rect.draw(self.win)
+                            self.drawBoard()
+                        self.averageTurns += self.turnsPlayed
+                        if self.turnsPlayed > self.maxTurns:
+                            self.maxTurns = self.turnsPlayed
 
-                    elif turnsPlayed >= 1000:
+                    elif self.turnsPlayed >= 1000:
                         won = True
                         done = True
-                        for player in players:
-                            ties[player] += 1
-                        players = [] #This is important to stop continuing the for loop. It can cause the value of ties to be much higher than it actually is
+                        for player in self.players:
+                            self.ties[player] += 1
+                        self.players = [] #This is important to stop continuing the for loop. It can cause the value of ties to be much higher than it actually is
 
 
                     #Only run this if you want to simulate each turn at a time
-                    if turnByTurn:
-                        playerCircleList[p].setOutline("white")
-                        playerCircleList[p].setFill("white")
-                        playerTextList[p].setTextColor("white")
+                    if self.turnByTurn:
+                        self.playerCircleList[p].setOutline("white")
+                        self.playerCircleList[p].setFill("white")
+                        self.playerTextList[p].setTextColor("white")
 
-                        playerCircleList[p] = Circle(Point(coordinateValues[posList[p]][0],coordinateValues[posList[p]][1]), 6)
-                        playerCircleList[p].draw(win)
-                        playerCircleList[p].setFill(colors[p])
+                        self.playerCircleList[p] = Circle(Point(self.coordinateValues[self.posList[p]][0],self.coordinateValues[self.posList[p]][1]), 6)
+                        self.playerCircleList[p].draw(self.win)
+                        self.playerCircleList[p].setFill(self.colors[p])
 
 
-                        playerTextList[p] = Text(Point(playerTextPos[p][0],playerTextPos[p][1]),"Player" + str(p+1) + ": " + str(playerMoneyList[p]))
-                        playerTextList[p].setTextColor(colors[p])
-                        playerTextList[p].draw(win)
+                        self.playerTextList[p] = Text(Point(self.playerTextPos[p][0],self.playerTextPos[p][1]),"Player" + str(p+1) + ": " + str(self.playerMoneyList[p]))
+                        self.playerTextList[p].setTextColor(self.colors[p])
+                        self.playerTextList[p].draw(self.win)
 
                         #Jail text
-                        jailIcon = Text(Point(coordinateValues[10][0],coordinateValues[10][1]-10), "J")
+                        jailIcon = Text(Point(self.coordinateValues[10][0],self.coordinateValues[10][1]-10), "J")
                         jailIcon.setTextColor("white")
-                        jailIcon.draw(win)
+                        jailIcon.draw(self.win)
 
-                        for player in players:
-                            if inJail[player] == True:
+                        for player in self.players:
+                            if self.inJail[player] == True:
                                 jailIcon.setTextColor("red")
 
-                        rollText = Text(Point(275,200), "Roll: " + str(die1) + " + " + str(die2) + " = " + str(die1+die2))
+                        rollText = Text(Point(275,200), "Roll: " + str(self.die1) + " + " + str(self.die2) + " = " + str(self.die1+self.die2))
                         rollText.setSize(25)
-                        rollText.draw(win)
+                        rollText.draw(self.win)
 
-                        middlePotText = Text(Point(275,310), "Middle Pot: " + str(middlePot))
+                        middlePotText = Text(Point(275,310), "Middle Pot: " + str(self.middlePot))
                         middlePotText.setSize(15)
-                        middlePotText.draw(win)
+                        middlePotText.draw(self.win)
 
-                        turnsPlayedText = Text(Point(275,480), "Turns Played: " + str(turnsPlayed))
+                        turnsPlayedText = Text(Point(275,480), "Turns Played: " + str(self.turnsPlayed))
                         turnsPlayedText.setSize(15)
-                        turnsPlayedText.draw(win)
+                        turnsPlayedText.draw(self.win)
 
                         #Printing to terminal
-                        print("Roll: " + str(die1) + " + " + str(die2) + " = " + str(die1+die2))
-                        print("Money" + ": " + str(playerMoneyList[p]))
+                        print("Roll: " + str(self.die1) + " + " + str(self.die2) + " = " + str(self.die1+self.die2))
+                        print("Money" + ": " + str(self.playerMoneyList[p]))
 
-                        if turnsPlayed % turnSkip == 0:
-                            win.getMouse()
+                        if self.turnsPlayed % self.turnSkip == 0:
+                            self.win.getMouse()
 
 
                         rollText.setTextColor("white")
@@ -664,18 +680,33 @@ def playGame(win,numPlayersO,turnByTurnO,turnSkipO,playerMoneyListO,propertiesOw
 
 
 
-                turnsPlayed += 1
-                boxValues[posList[p]] += 1
+                self.turnsPlayed += 1
+                self.boxValues[self.posList[p]] += 1
 
 
 
-        for v in range(len(boxValues)):
-            boxValues[v] = (boxValues[v]/turnsPlayed)
-            ultimateBoxValues[v] += boxValues[v]
+        for v in range(len(self.boxValues)):
+            self.boxValues[v] = (self.boxValues[v]/self.turnsPlayed)
+            self.ultimateBoxValues[v] += self.boxValues[v]
 
 
         #Saving end game state
-        gameInfoDict[j] = [playerMoneyList.copy(),[l.copy() for l in propertiesOwnedList],posList.copy(),masterHousesList.copy(),masterMortgageList.copy(),middlePot,masterPropertiesOwnedList.copy(), turnsPlayed ,inJail]
+        self.gameState.append(self.__dict__.copy())
+        # gameInfoDict[j] = [playerMoneyList.copy(),[l.copy() for l in propertiesOwnedList],posList.copy(),masterHousesList.copy(),masterMortgageList.copy(),middlePot,masterPropertiesOwnedList.copy(), turnsPlayed ,inJail]
+
+
+    def simulateMany(self,num):
+        for j in range(num):
+            self.simulate(j)
+
+
+    def findStrategy(self):
+        pass
+
+'''
+def playGame(win,numPlayersO,turnByTurnO,turnSkipO,playerMoneyListO,propertiesOwnedListO,posListO,masterHousesListO,masterMortgageListO,middlePotO,masterPropertiesOwnedListO):
+
+    #Game is played 10000 times
 
 
     nonProperties = [0,2,4,7,10,17,20,22,30,33,36,38]
@@ -918,12 +949,12 @@ def playGame(win,numPlayersO,turnByTurnO,turnSkipO,playerMoneyListO,propertiesOw
 
 
 
-
+'''
 
 def main():
 
     ################## Edit Starting Values ####################
-    numPlayers = 10 #Number of players
+    numPlayers = 7 #Number of players
     turnByTurn = False #True for one game at a time, False for 10,000 game simulation
     turnSkip = 1 #Number of turns played after click
 
@@ -986,11 +1017,17 @@ def main():
     #######################################################
 
 
-    win = GraphWin('Face', 550, 550) # give title and dimensions
+    win = GraphWin('Monopoly Simulator', 550, 550) # give title and dimensions
 
-    drawBoard(win)
-    playGame(win,numPlayers,turnByTurn,turnSkip,playerMoneyList,propertiesOwnedList,posList,masterHousesList,masterMortgageList,middlePot,masterPropertiesOwnedList)
+    game1 = Game(win,numPlayers,turnByTurn,turnSkip,playerMoneyList,propertiesOwnedList,posList,masterHousesList,masterMortgageList,middlePot,masterPropertiesOwnedList)
+    game1.drawBoard()
+    game1.simulateMany(1000)
 
     win.close()
 
 main()
+
+
+#To do:
+
+# Don't pay rent if owner is in jail
