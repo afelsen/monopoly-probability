@@ -17,6 +17,8 @@ def getGradientListRGB(color1,color2,length):
 
 class Game:
     def __init__(self,win,numPlayersO,turnByTurnO,turnSkipO,playerMoneyListO,propertiesOwnedListO,posListO,masterHousesListO,masterMortgageListO,middlePotO,masterPropertiesOwnedListO):
+        self.j = 0
+
         self.win = win
         self.numPlayersO = numPlayersO
         self.turnByTurnO = turnByTurnO
@@ -84,6 +86,8 @@ class Game:
         self.gameState = []
         self.gamesWon = [[],[],[],[],[],[],[],[],[],[]]
 
+        self.nonProperties = [0,2,4,7,10,17,20,22,30,33,36,38]
+
     def drawBoard(self):
 
         #Drawing grid
@@ -125,7 +129,7 @@ class Game:
         monopolyTitle.setSize(35)
         monopolyTitle.draw(self.win)
 
-    def simulate(self,j):
+    def simulate(self):
         self.playerMoneyList = self.playerMoneyListO.copy()
         self.propertiesOwnedList = [[],[],[],[],[],[],[],[],[],[],[]]
         for n in range(len(self.propertiesOwnedListO)):
@@ -697,11 +701,42 @@ class Game:
 
     def simulateMany(self,num):
         for j in range(num):
-            self.simulate(j)
+            self.simulate()
 
 
     def findStrategy(self):
         pass
+
+    def winLossTieRatio(self):
+        numWins = 0
+        numLosses = 0
+        numTies = 0
+
+        for i in range(len(self.wins)):
+            numWins += self.wins[i]
+            self.wins[i] = self.wins[i]/(self.j+1)
+
+        for i in range(len(self.losses)):
+            numLosses += self.losses[i]
+            self.losses[i] = self.losses[i]/(self.j+1)
+
+        for i in range(len(ties)):
+            numTies += ties[i]
+            ties[i] = ties[i]/(self.j+1)
+
+        print(self.wins)
+        print(self.losses)
+        print(self.ties)
+
+        wlt = Text(Point(275,420), "Wins | " + str(self.wins))
+        wlt.setTextColor('green')
+        wlt.draw(self.win)
+        wlt = Text(Point(275,440), "Losses | " + str(self.losses))
+        wlt.setTextColor('red')
+        wlt.draw(self.win)
+        wlt = Text(Point(275,460), "Ties | " + str(self.ties))
+        wlt.setTextColor('orange')
+        wlt.draw(self.win)
 
 '''
 def playGame(win,numPlayersO,turnByTurnO,turnSkipO,playerMoneyListO,propertiesOwnedListO,posListO,masterHousesListO,masterMortgageListO,middlePotO,masterPropertiesOwnedListO):
@@ -709,41 +744,9 @@ def playGame(win,numPlayersO,turnByTurnO,turnSkipO,playerMoneyListO,propertiesOw
     #Game is played 10000 times
 
 
-    nonProperties = [0,2,4,7,10,17,20,22,30,33,36,38]
-
 
 ###Wins,Loss,Tie Ratio by player
-    numWins = 0
-    numLosses = 0
-    numTies = 0
 
-    for i in range(len(wins)):
-        numWins += wins[i]
-        wins[i] = wins[i]/(j+1)
-
-    for i in range(len(losses)):
-        numLosses += losses[i]
-        losses[i] = losses[i]/(j+1)
-
-    for i in range(len(ties)):
-        numTies += ties[i]
-        ties[i] = ties[i]/(j+1)
-
-    print(wins)
-    print(losses)
-    print(ties)
-
-
-
-    wlt = Text(Point(275,420), "Wins | " + str(wins))
-    wlt.setTextColor('green')
-    wlt.draw(win)
-    wlt = Text(Point(275,440), "Losses | " + str(losses))
-    wlt.setTextColor('red')
-    wlt.draw(win)
-    wlt = Text(Point(275,460), "Ties | " + str(ties))
-    wlt.setTextColor('orange')
-    wlt.draw(win)
 
 
 ###Percent landed on each square
@@ -1022,7 +1025,10 @@ def main():
     game1 = Game(win,numPlayers,turnByTurn,turnSkip,playerMoneyList,propertiesOwnedList,posList,masterHousesList,masterMortgageList,middlePot,masterPropertiesOwnedList)
     game1.drawBoard()
     game1.simulateMany(1000)
+    game1.winLossTieRatio()
 
+
+    win.getMouse()
     win.close()
 
 main()
