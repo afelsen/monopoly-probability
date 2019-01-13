@@ -13,12 +13,12 @@ This is a python application used for analyzing the statistics of a monopoly gam
 2. simulateMany(n): This method simulates n number of games. At the end, statistics are displayed on the game board.
 3. drawBoard(): This method draws the game board. This is used to display turn information or statistics at the end of a multi-game simulation
 4. findStrategy(): This method changes key variables to track the best strategy for the best odds of winning.
-5. displayWinLossTieRatio: This method displays the win/loss/tie ratio. Displayed in the center of the game board.
-6. displayPercentLandedOn: This method displays the percent each property was landed on. Displayed on the bottom row of each property.
-7. displayLostOnProperties: This method displays the percent of the time a property was lost on. Displayed on the bottom row of each property.
-8. displayLosingProperties: This method displays the percent of the time a player who placed second owned each property. Displayed on the bottom row of each property.
-9. displayWinningProperties: This method displays the percent of the time a winner owned each property. Displayed on the upper row of each property.
-10. displaySpecificGame: This method allows the user to display the ending of a specific game played in a multi-game simulation.
+5. displayWinLossTieRatio(): This method displays the win/loss/tie ratio. Displayed in the center of the game board.
+6. displayPercentLandedOn(): This method displays the percent each property was landed on. Displayed on the bottom row of each property.
+7. displayLostOnProperties(): This method displays the percent of the time a property was lost on. Displayed on the bottom row of each property.
+8. displayLosingProperties(): This method displays the percent of the time a player who placed second owned each property. Displayed on the bottom row of each property.
+9. displayWinningProperties(): This method displays the percent of the time a winner owned each property. Displayed on the upper row of each property.
+10. displaySpecificGame(): This method allows the user to display the ending of a specific game played in a multi-game simulation.
 
 
 ## Changing modes, altering starting conditions:
