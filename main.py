@@ -96,6 +96,10 @@ class Game:
 
         self.nonProperties = [0,2,4,7,10,17,20,22,30,33,36,38]
 
+        #Strategy variables
+        self.moneyToBuyHouse = 200
+        self.minValueToBuyProperty = 0
+
     def drawBoard(self):
         '''
             Draws the game board
@@ -259,7 +263,7 @@ class Game:
                             if v not in self.propertiesOwnedList[p]:
                                 haveMonopoly = False
                         if haveMonopoly == True:
-                            while self.playerMoneyList[p] > 200 + self.propertyHouseCost[v]:
+                            while self.playerMoneyList[p] > self.propertyHouseCost[v] and (p != 0 or self.playerMoneyList[p] - self.propertyHouseCost[v] > self.moneyToBuyHouse):
                                 self.playerMoneyList[p] -= self.propertyHouseCost[v]
                                 if len(m) == 3:
                                     if self.masterHousesList[m[0]] >= 5 and self.masterHousesList[m[1]] >= 5 and self.masterHousesList[m[2]] >= 5:
@@ -470,7 +474,7 @@ class Game:
                     #If the player lands on an unowned property
                     if isinstance(self.propertyPriceList[self.posList[p]],int) and (self.posList[p] not in self.masterPropertiesOwnedList):
                         #If the player can afford it
-                        if self.propertyPriceList[self.posList[p]] < self.playerMoneyList[p]:
+                        if self.propertyPriceList[self.posList[p]] < self.playerMoneyList[p]  and (p != 0 or self.playerMoneyList[p]-self.propertyPriceList[self.posList[p]] > self.minValueToBuyProperty):
                             self.masterPropertiesOwnedList.append(self.posList[p])
                             self.propertiesOwnedList[p].append(self.posList[p])
                             self.playerMoneyList[p] -= self.propertyPriceList[self.posList[p]]
@@ -618,7 +622,10 @@ class Game:
                         self.propertyLostOn[self.posList[p]] += 1
                         for property in self.propertiesOwnedList[p]:
                             self.losingProperties[property] += 1
-                        self.players.remove(p)
+                        try:
+                            self.players.remove(p)
+                        except ValueError:
+                            print(self.j)
                         done = True
 
                     #If there is only one player left
@@ -726,7 +733,28 @@ class Game:
         '''
             Changes vairables to find the ideal strategy
         '''
-        pass
+        self.maxWins = 0
+        self.minWins = 100
+        strategyList = []
+        for i in range(40):
+            self.minValueToBuyProperty = random.choice([0,65])
+            self.moneyToBuyHouse = 50*i
+            self.wins[0] = 0
+            for self.j in range(100):
+                self.simulate()
+            if  self.wins[0] > self.maxWins:
+                strategyList.clear()
+                strategyList.append((self.j+1)*(i+1))
+                strategyList.append("minValueToBuyProperty: " + str(self.minValueToBuyProperty))
+                strategyList.append("moneyToBuyHouse: " + str(self.moneyToBuyHouse))
+                self.maxWins = self.wins[0]
+            # print(self.wins[0])
+            # print(((self.j+1)*(i+1)))
+            # print("minValueToBuyProperty: " + str(self.minValueToBuyProperty))
+            # print(("moneyToBuyHouse: " + str(self.moneyToBuyHouse)))
+            # print()
+        print(self.maxWins)
+        print(strategyList)
 
     def displayWinLossTieRatio(self):
         '''
@@ -959,14 +987,14 @@ class Game:
 
 
             self.win.getMouse()
-            self.middlePotText.setTextColor("white")
-            self.turnsPlayedText.setTextColor("white")
+            middlePotText.setTextColor("white")
+            turnsPlayedText.setTextColor("white")
 
 
 def main():
 
     ################## Edit Starting Values ####################
-    numPlayers = 7 #Number of players
+    numPlayers = 10 #Number of players
     turnByTurn = False #True for one game at a time, False for 10,000 game simulation
     turnSkip = 1 #Number of turns played after click
 
@@ -1031,10 +1059,21 @@ def main():
 
     win = GraphWin('Monopoly Simulator', 550, 550) # give title and dimensions
 
-    game1 = Game(win,numPlayers,turnByTurn,turnSkip,playerMoneyList,propertiesOwnedList,posList,masterHousesList,masterMortgageList,middlePot,masterPropertiesOwnedList)
 
+    # for numPlayers in range(2,11):
+    #     game = Game(win,numPlayers,turnByTurn,turnSkip,playerMoneyList,propertiesOwnedList,posList,masterHousesList,masterMortgageList,middlePot,masterPropertiesOwnedList)
+    #     print("numPlayers: " + str(numPlayers))
+    #     game.findStrategy()
+    #     print()
+
+
+
+
+
+    game1 = Game(win,numPlayers,turnByTurn,turnSkip,playerMoneyList,propertiesOwnedList,posList,masterHousesList,masterMortgageList,middlePot,masterPropertiesOwnedList)
     game1.drawBoard()
-    game1.simulateMany(100)
+    game1.simulateMany(1000)
+    # game1.findStrategy()
     game1.displayWinLossTieRatio()
 
     #Displayed top row on properties
@@ -1056,6 +1095,6 @@ main()
 #To do:
 
 # Don't pay rent if owner is in jail
-# Fix occasional bug: File "main.py", line 606, in simulate
+# Fix occasional bug: File "main.py", line 625, in simulate
 #     self.players.remove(p)
 #     ValueError: list.remove(x): x not in list
