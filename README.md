@@ -2,16 +2,24 @@
 #### Created by Adiel Felsen
 
 ## Description
-This is a python application used for analyzing the statistics of a monopoly game. This application can either be used for simulating a single game of monopoly or gathering data from thousands of simulated games.
+This is a python application used for analyzing the statistics of a monopoly game. This application can either be used for simulating a single game of monopoly, gathering data from thousands of simulated games or finding ideal strategies.
 
-## Modules
+## Modules of Game class
 * This program uses [graphics](http://www.pas.rochester.edu/~rsarkis/csc161/python/pip-graphics.html) to display game board and data
 * This program also uses [colour](https://pypi.org/project/colour/) to color code the data with a gradient
 
-## Modes
-There are two modes in which this application can be used:
-1. Single Game Simulation: This mode simulates a game of monopoly turn by turn. The game board is displayed on the _graphics_ display and clicking the screen advances the game.
-2. 10,000 Game Simulation: This simulates 10,000 games (but does not display changes to the game board). At the end, statistics are displayed on the game board.
+## Methods
+1. simulate(): This method simulates a game of monopoly. If turnByTurn == True, the game board is displayed on the _graphics_ display and clicking the screen advances the game.
+2. simulateMany(n): This method simulates n number of games. At the end, statistics are displayed on the game board.
+3. drawBoard(): This method draws the game board. This is used to display turn information or statistics at the end of a multi-game simulation
+4. findStrategy(): This method changes key variables to track the best strategy for the best odds of winning.
+5. displayWinLossTieRatio: This method displays the win/loss/tie ratio. Displayed in the center of the game board.
+6. displayPercentLandedOn: This method displays the percent each property was landed on. Displayed on the bottom row of each property.
+7. displayLostOnProperties: This method displays the percent of the time a property was lost on. Displayed on the bottom row of each property.
+8. displayLosingProperties: This method displays the percent of the time a player who placed second owned each property. Displayed on the bottom row of each property.
+9. displayWinningProperties: This method displays the percent of the time a winner owned each property. Displayed on the upper row of each property.
+10. displaySpecificGame: This method allows the user to display the ending of a specific game played in a multi-game simulation.
+
 
 ## Changing modes, altering starting conditions:
 * Certain parts of the code can be edited to change modes and the starting conditions of players. These parts are clearly indicated in main(), surrounded by # symbols.
@@ -35,7 +43,7 @@ Values:
 * middlePot: The amount of money in the middle pot
 
 ## Explanation of symbols
-1. Mode 1:
+1. When turnByTurn == True:
    * Circles: Represent the players
    * Colored numbers below property names: The player who owns the property
    * Red M on the bottom right of property names: Indicate that a property is mortgaged
@@ -43,11 +51,12 @@ Values:
    * Red "J" on "In Jail": Indicates whether a player is currently in jail (rather than "just visiting")
    * Center: Displays other gameplay information - player money, dice roll, middle pot, chance/community card values
 
-2. Upon completion of 10000 games, game statistics are displayed:
+2. Upon completion of many games:
    * Upper numbers: Represents the percent of winners who owned the property
-   * Lower numbers: The percent of time each property is landed on
-      * With slight alterations to the code, this can be changed to all squares, not just properties
-      * This can also be replaced with the number of times a property is "lost" on by commenting and uncommenting portions of the code
+   * Lower numbers: Represents one of many statistics
+      1. Percent of the time the property was landed on
+      2. Times the property was lost on
+      3. Percent of the time a player in 2nd place owned the property
 
 ## Rules that the players follow (in order):
 Before roll
@@ -78,7 +87,6 @@ After Roll
 * Properties that winners tend to have does not seem to directly correlate with the most landed on properties
 * Boardwalk is the most common property owned by winners
 * The dark purple/brown properties are least likely to be landed on and among the least common owned by winners
-
 
 
 ## Example
