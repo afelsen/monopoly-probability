@@ -2,7 +2,7 @@
 #### Created by Adiel Felsen
 
 ## Description
-This is a python application used for analyzing the statistics of a monopoly game. This application can either be used for simulating a single game of monopoly, gathering data from thousands of simulated games or finding ideal strategies.
+This is a python application used for analyzing the statistics of a monopoly game. This application can either be used for simulating a single game of monopoly, gathering data from thousands of simulated games or finding ideal gameplay strategies.
 
 ## Modules of Game class
 * This program uses [graphics](http://www.pas.rochester.edu/~rsarkis/csc161/python/pip-graphics.html) to display game board and data
@@ -43,7 +43,7 @@ Values:
 * middlePot: The amount of money in the middle pot
 
 ## Explanation of symbols
-1. When turnByTurn == True:
+1. Gameplay information:
    * Circles: Represent the players
    * Colored numbers below property names: The player who owns the property
    * Red M on the bottom right of property names: Indicate that a property is mortgaged
@@ -52,11 +52,13 @@ Values:
    * Center: Displays other gameplay information - player money, dice roll, middle pot, chance/community card values
 
 2. Upon completion of many games:
-   * Upper numbers: Represents the percent of winners who owned the property
-   * Lower numbers: Represents one of many statistics
+   * Upper numbers on properties: Represents the percent of winners who owned the property
+   * Lower numbers on properties: Represents one of many statistics
       1. Percent of the time the property was landed on
       2. Times the property was lost on
       3. Percent of the time a player in 2nd place owned the property
+   * Middle-Top: Percent of properties owned by winner and second place
+   * Middle-Bottom: Percent wins, losses and ties for each player
 
 ## Rules that the players follow (in order):
 Before roll
@@ -90,5 +92,4 @@ After Roll
 
 
 ## Example
-
 <img src="READMEexamples/MonopolySingle1.png" width="48%"/> <img src="READMEexamples/MonopolyTenThousand.png" width="48%"/>
